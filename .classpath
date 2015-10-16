@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="bc-java/core/src/main/java"/>
+	<classpathentry excluding="org/bouncycastle/math/ec/test/" kind="src" path="bc-java/core/src/test/java"/>
+	<classpathentry kind="src" path="MentalPoker"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
