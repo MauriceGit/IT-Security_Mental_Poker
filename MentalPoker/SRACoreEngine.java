@@ -80,11 +80,11 @@ class SRACoreEngine
     public BigInteger convertInput(byte[] in, int inOff, int inLen) {
         if (inLen > (getInputBlockSize() + 1))
         {
-            throw new DataLengthException("input too large for RSA cipher.");
+            throw new DataLengthException("input too large for SRA cipher.");
         }
         else if (inLen == (getInputBlockSize() + 1) && !forEncryption)
         {
-            throw new DataLengthException("input too large for RSA cipher.");
+            throw new DataLengthException("input too large for SRA cipher.");
         }
 
         byte[]  block;
@@ -103,7 +103,7 @@ class SRACoreEngine
         BigInteger res = new BigInteger(1, block);
         if (res.compareTo(key.getModulus()) >= 0)
         {
-            throw new DataLengthException("input too large for RSA cipher.");
+            throw new DataLengthException("input too large for SRA cipher.");
         }
 
         return res;

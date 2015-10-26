@@ -16,7 +16,6 @@ public class SRAKeyParameters
             BigInteger p,
             BigInteger q,
             BigInteger exponent) {
-        // Das ist theoretisch immer private, bzw. spielt keine Rolle.
         super (isPrivate);
         this.p = p;
         this.q = q;
