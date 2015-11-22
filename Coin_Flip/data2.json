@@ -1,0 +1,21 @@
+{
+    "protocolId": 0,
+    "statusId": 0,
+    "statusMessage": "OK",
+    
+    "protocolNegotiation" : {
+        "availableVersions" : [
+        	{
+        		"name" : "Koko",
+        		"versions" : [1,2,3]
+        	},
+        	{
+        		"name" : "Maurice",
+        		"versions" : [1,2,3]
+        	}
+		],
+        "version" : 3
+    }
+    
+    
+}

@@ -1,0 +1,12 @@
+{
+  "protocolId" : 0,
+  "statusId" : 0,
+  "statusMessage" : "OK",
+  "protocolNegotiation" : {
+    "version" : null,
+
+    "availableVersions" : [ {
+      "versions" : [ "1.0" ]
+    } ]
+  }
+}
