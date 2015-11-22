@@ -1,3 +1,5 @@
+package CoinFlip;
+
 import java.util.LinkedList;
 
 import com.fasterxml.jackson.core.JsonProcessingException;

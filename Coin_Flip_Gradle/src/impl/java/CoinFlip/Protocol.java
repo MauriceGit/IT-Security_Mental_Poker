@@ -1,3 +1,5 @@
+package CoinFlip;
+
 import java.math.BigInteger;
 import java.util.LinkedList;
 
