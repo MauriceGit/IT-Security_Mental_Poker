@@ -1,13 +1,27 @@
 import java.math.BigInteger;
 import java.util.LinkedList;
 
+import com.fasterxml.jackson.annotation.JsonFilter;
+
 public class Protocol {
 
+    /**
+     * Wird immer übertragen!
+     */
     private int protocolId;
     private int statusId;
     private String statusMessage;
+    /**
+     * Wird in den ersten Schritten ausgehandelt!
+     */
     private ProtocolNegotiation protocolNegotiation;
+    /**
+     * Aushandeln danach!
+     */
     private KeyNegotiation keyNegotiation;
+    /**
+     * Das eigentliche Spiel.
+     */
     private Payload payload;
     
     public static class ProtocolNegotiation {
@@ -62,7 +76,7 @@ public class Protocol {
             this.versions = versions;
         }
     }
-
+    
     public static class KeyNegotiation {
         private LinkedList<Sids> availableSids = new LinkedList<Sids>();
         private int sid;

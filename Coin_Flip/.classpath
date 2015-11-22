@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="/home/maurice/Uni/Master/IT-Security_Mental_Poker/Coin_Flip/libs/jackson-databind-2.6.3.jar"/>
-	<classpathentry kind="lib" path="/home/maurice/Uni/Master/IT-Security_Mental_Poker/Coin_Flip/libs/jackson-core-2.6.3.jar"/>
-	<classpathentry kind="lib" path="/home/maurice/Uni/Master/IT-Security_Mental_Poker/Coin_Flip/libs/jackson-annotations-2.6.3.jar"/>
-	<classpathentry kind="output" path="bin"/>
-</classpath>
