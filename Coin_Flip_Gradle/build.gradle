@@ -45,10 +45,10 @@ dependencies {
     )
 }
 
-//jar {
-//    from sourceSets.api.output
-//    from sourceSets.impl.output
-//}
+jar {
+    from sourceSets.api.output
+    from sourceSets.impl.output
+}
 
 //create a single Jar with all dependencies
 task fatJar(type: Jar) {
