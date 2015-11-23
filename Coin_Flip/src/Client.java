@@ -16,33 +16,19 @@ public class Client {
      * @throws Exception 
      */
     private static void handleProtocol(ProtocolImpl protocolImpl, Socket socket, BufferedReader in, PrintWriter out) throws Exception {
-        String tmp = in.readLine();
-        String json = tmp;
+        String json;
         while (true) {
+            json = in.readLine();
             
-            System.out.println(tmp);
-            
-            /**
-             * Einlesen des Json!
-             */
-            while (tmp != null && in.ready()) {
-                json = json + tmp;
-                tmp = in.readLine();
-            }
-            
-            if (json == "") {
+            if (json == "" || json == null) {
                 break;
             }
             
-            if (protocolImpl.status(json) == Status.PROTOCOL_OK) {
+            if (protocolImpl.statusAndRegister(json) == Status.PROTOCOL_OK) {
                 out.println(protocolImpl.calcAndRespondToProtocolStep());
             } else {
                 break;
             }
-                
-            json = "";
-            
-            
         }
         out.close();
         socket.close();
@@ -87,8 +73,7 @@ public class Client {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             
             if (isServer) {
-                String initial = protocolImpl.constructInitialJson(); 
-                //System.out.println(initial);
+                String initial = protocolImpl.calcAndRespondToProtocolStep();
                 out.println(initial);
             }
             
@@ -98,18 +83,6 @@ public class Client {
             System.out.println("Some serious shit is going on ...");
             System.out.println(e);
         }
-        
-        
-        
-//
-//        Protocol protocol = new Protocol();
-//        ProtocolImpl protocolImpl = new ProtocolImpl();
-//        
-//        System.out.println(json);
-//        
-//        Protocol newProtocol = protocolImpl.parseJson(json);
-
-        
         
     }
 

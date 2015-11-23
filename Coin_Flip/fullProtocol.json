@@ -1,4 +1,5 @@
 
+// fertig. 0
 FromAlice:{
   "protocolId" : 0,
   "statusId" : 0,
@@ -11,6 +12,7 @@ FromAlice:{
   }
 }
 
+// fertig. 1
 FromBob:{
   "protocolId" : 1,
   "statusId" : 0,
@@ -25,6 +27,7 @@ FromBob:{
   }
 }
 
+// fertig. 2
 FromAlice:{
   "protocolId" : 2,
   "statusId" : 0,
@@ -57,6 +60,7 @@ FromAlice:{
   }
 }
 
+// fertig. 3
 FromBob:{
   "protocolId" : 3,
   "statusId" : 0,
@@ -91,6 +95,7 @@ FromBob:{
   }
 }
 
+// fertig. 4
 FromAlice:{
   "protocolId" : 4,
   "statusId" : 0,
@@ -125,6 +130,7 @@ FromAlice:{
   }
 }
 
+// fertig. 5
 FromBob:{
   "protocolId" : 5,
   "statusId" : 0,
@@ -159,6 +165,7 @@ FromBob:{
   }
 }
 
+// fertig. 6
 FromAlice:{
   "protocolId" : 6,
   "statusId" : 0,
@@ -195,6 +202,7 @@ FromAlice:{
 
 --Coin result is: TAIL
 
+// fertig. 7
 FromBob:{
   "protocolId" : 7,
   "statusId" : 0,

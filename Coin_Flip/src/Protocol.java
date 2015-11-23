@@ -8,25 +8,25 @@ public class Protocol {
     /**
      * Wird immer übertragen!
      */
-    private int protocolId;
-    private int statusId;
-    private String statusMessage;
+    private int protocolId = -1;
+    private int statusId = 0;
+    private String statusMessage = "OK";
     /**
      * Wird in den ersten Schritten ausgehandelt!
      */
-    private ProtocolNegotiation protocolNegotiation;
+    private ProtocolNegotiation protocolNegotiation = new ProtocolNegotiation();
     /**
      * Aushandeln danach!
      */
-    private KeyNegotiation keyNegotiation;
+    private KeyNegotiation keyNegotiation = new KeyNegotiation();
     /**
      * Das eigentliche Spiel.
      */
-    private Payload payload;
+    private Payload payload = new Payload();
     
     public static class ProtocolNegotiation {
         private LinkedList<Version> availableVersions = new LinkedList<Version>();
-        private int version;
+        private int version = 0;
 
         public LinkedList<Version> getAvailableVersions() {
             return availableVersions;
@@ -57,8 +57,8 @@ public class Protocol {
             return "Version [name=" + name + ", versions=" + versions + "]";
         }
 
-        private String name;
-        private LinkedList<Integer> versions;
+        private String name = "Maurice";
+        private LinkedList<Integer> versions = new LinkedList<Integer>();
 
         public String getName() {
             return name;
@@ -79,8 +79,9 @@ public class Protocol {
     
     public static class KeyNegotiation {
         private LinkedList<Sids> availableSids = new LinkedList<Sids>();
-        private int sid;
-        private BigInteger p;
+        private int sid = 0;
+        private BigInteger p = BigInteger.ZERO;
+        private BigInteger q = BigInteger.ZERO;
 
         @Override
         public String toString() {
@@ -120,7 +121,7 @@ public class Protocol {
             this.q = q;
         }
 
-        private BigInteger q;
+        
     }
 
     public static class Sids {
@@ -142,13 +143,13 @@ public class Protocol {
     
     public static class Payload {
         private LinkedList<String> initialCoin = new LinkedList<String>();
-        private String desiredCoin;
-        private LinkedList<String> encryptedCoin;
-        private String enChosenCoin;
-        private String deChosenCoin;
-        private LinkedList<BigInteger> keyA;
-        private LinkedList<BigInteger> keyB;
-        private String signatureA;
+        private String desiredCoin = "";
+        private LinkedList<String> encryptedCoin = new LinkedList<String>();
+        private String enChosenCoin = "";
+        private String deChosenCoin = "";
+        private LinkedList<BigInteger> keyA = new LinkedList<BigInteger>();
+        private LinkedList<BigInteger> keyB = new LinkedList<BigInteger>();
+        private String signatureA = "";
         public LinkedList<String> getInitialCoin() {
             return initialCoin;
         }
