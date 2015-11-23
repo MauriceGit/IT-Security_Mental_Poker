@@ -36,7 +36,7 @@ dependencies {
     testCompile sourceSets.impl.output
     runtime configurations.apiRuntime
     runtime configurations.implRuntime
-    
+
     compile 'com.github.timpauls:bc-java:sra_1.0.2'
     compile (
      [group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.6.3'],
@@ -44,6 +44,7 @@ dependencies {
      [group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.6.3']
     )
 }
+
 
 jar {
     from sourceSets.api.output
