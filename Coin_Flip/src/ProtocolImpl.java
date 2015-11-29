@@ -153,8 +153,8 @@ public class ProtocolImpl {
     private boolean validateNewPayloadFirst(Protocol protocol) {
         return protocol.getPayload().getInitialCoin().size() == 2
                 && protocol.getPayload().getEncryptedCoin().size() == 2
-                && protocol.getPayload().getEncryptedCoin().get(0) != ""
-                && protocol.getPayload().getEncryptedCoin().get(1) != "";
+                && !protocol.getPayload().getEncryptedCoin().get(0).equals("")
+                && !protocol.getPayload().getEncryptedCoin().get(1).equals("");
     }
 
     private boolean validateNewPayloadSecond(Protocol protocol) {
@@ -166,14 +166,14 @@ public class ProtocolImpl {
     }
 
     private boolean validateNewPayloadThird(Protocol protocol) {
-        return protocol.getPayload().getDeChosenCoin() != ""
-                && protocol.getPayload().getKeyA().get(0) != BigInteger.ZERO
-                && protocol.getPayload().getKeyA().get(1) != BigInteger.ZERO;
+        return !protocol.getPayload().getDeChosenCoin().equals("")
+                && !protocol.getPayload().getKeyA().get(0).equals(BigInteger.ZERO)
+                && !protocol.getPayload().getKeyA().get(1).equals(BigInteger.ZERO);
     }
 
     private boolean validateNewPayloadForth(Protocol protocol) {
-        return protocol.getPayload().getKeyB().get(0) != BigInteger.ZERO
-                && protocol.getPayload().getKeyB().get(1) != BigInteger.ZERO;
+        return !protocol.getPayload().getKeyB().get(0).equals(BigInteger.ZERO)
+                && !protocol.getPayload().getKeyB().get(1).equals(BigInteger.ZERO);
     }
 
     /**
@@ -216,29 +216,23 @@ public class ProtocolImpl {
             case 7:
                 everythingOK = everythingOK
                         && validateOldPayloadThird(protocol, before);
-                p(protocolStep + " == " + everythingOK);
             case 6:
                 everythingOK = everythingOK
                         && validateOldPayloadSecond(protocol, before);
-                p(protocolStep + " == " + everythingOK);
             case 5:
                 everythingOK = everythingOK
-                        && validateOldPayloadFirst(protocol, before);
-                p(protocolStep + " == " + everythingOK);                
+                        && validateOldPayloadFirst(protocol, before);        
             case 4:
                 everythingOK = everythingOK
                         && validateOldKeyNegotiation(protocol, before);
-                p(protocolStep + " == " + everythingOK);
             case 3:
             case 2:
                 everythingOK = everythingOK
                         && validateOldProtocolNegotiation(protocol, before);
-                p(protocolStep + " == " + everythingOK);
             case 1:
             case 0:
                 everythingOK = everythingOK
                         && validateGeneralAttributes(protocol, before);
-                p(protocolStep + " == " + everythingOK);
             }
 
             // Tests, die nur in dem jeweiligen Schritt einmal getestet werden
@@ -247,7 +241,6 @@ public class ProtocolImpl {
             case 7:
                 everythingOK = everythingOK
                         && validateNewPayloadForth(protocol);
-                p(protocolStep + " == " + everythingOK);
                 break;
             case 6:
                 everythingOK = everythingOK
@@ -257,34 +250,28 @@ public class ProtocolImpl {
             case 5:
                 everythingOK = everythingOK
                         && validateNewPayloadSecond(protocol);
-                p(protocolStep + " == " + everythingOK);
                 break;
             case 4:
                 everythingOK = everythingOK
                         && validateNewPayloadFirst(protocol);
-                p(protocolStep + " == " + everythingOK);
                 break;
             case 3:
                 everythingOK = everythingOK
                         && validateNewKeyNegotiationLong(protocol);
-                p(protocolStep + " == " + everythingOK);
                 break;
             case 2:
                 everythingOK = everythingOK
                         && validateNewKeyNegotiation(protocol);
-                p(protocolStep + " == " + everythingOK);
                 break;
             case 1:
                 everythingOK = everythingOK && validateChosenVersion(protocol)
                         && validateNewProtocolNegotiation(protocol);
                 everythingOK = everythingOK
                         && iCanHandleTheChosenVersion(protocol);
-                p(protocolStep + " == " + everythingOK);
                 break;
             case 0:
                 everythingOK = everythingOK
                         && validateNewProtocolNegotiation(protocol);
-                p(protocolStep + " == " + everythingOK);
             }
 
             probablyFunnyMessage(protocol);

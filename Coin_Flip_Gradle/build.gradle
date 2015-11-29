@@ -39,16 +39,17 @@ dependencies {
 
     compile 'com.github.timpauls:bc-java:sra_1.0.2'
     compile (
-     [group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.6.3'],
-     [group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.6.3'],
-     [group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.6.3']
+     [group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.4.1'],
+     [group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.4.1'],
+     [group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.4.1']
     )
 }
 
-
-jar {
-    from sourceSets.api.output
-    from sourceSets.impl.output
+jar { 
+    baseName = 'project-jar' 
+    version = '1.0' 
+    manifest { 
+        attributes 'Main-Class': 'CoinFlip.Client' } 
 }
 
 //create a single Jar with all dependencies
