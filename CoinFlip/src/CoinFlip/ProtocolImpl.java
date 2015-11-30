@@ -1,7 +1,16 @@
 package CoinFlip;
 
 import java.math.BigInteger;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.LinkedList;
+
+import org.bouncycastle.jcajce.provider.asymmetric.sra.SRADecryptionKeySpec;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,9 +20,23 @@ public class ProtocolImpl {
     private ObjectMapper mapper;
     private Protocol protocol;
 
+    // first get the sra key pair generator instance.
+    private KeyPairGenerator generator;
+    private KeyPair keyPair;
+
+    
     public ProtocolImpl() {
         protocol = new Protocol();
         mapper = new ObjectMapper();
+        try {
+            generator = KeyPairGenerator.getInstance("SRA", BouncyCastleProvider.PROVIDER_NAME);
+        } catch (NoSuchAlgorithmException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (NoSuchProviderException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     private void p(String s) {
@@ -333,9 +356,43 @@ public class ProtocolImpl {
      * andere die nicht kann, soll er selber Fehler werfen!
      */
     private void addKeyNegotiationSecond() {
-        protocol.getKeyNegotiation().setP(new BigInteger("1234"));
-        protocol.getKeyNegotiation().setQ(new BigInteger("5678"));
+        
+        
+        
+        // provide a bit-size for the key (1024-bit key in this example).
+        generator.initialize(1024);
+        // generate the key pair.
+        keyPair = generator.generateKeyPair();
+        
+        // get a key factory instance for SRA
+        KeyFactory factory = null;
+        try {
+            factory = KeyFactory.getInstance("SRA", BouncyCastleProvider.PROVIDER_NAME);
+        } catch (NoSuchAlgorithmException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (NoSuchProviderException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        // extract p and q. you have to use the private key for this, since only the private key contains the information.
+        // the key factory fetches the hidden information out of the private key and fills a SRADecryptionKeySpec to provide the information.
+        SRADecryptionKeySpec spec = null;
+        try {
+            spec = factory.getKeySpec(keyPair.getPrivate(), SRADecryptionKeySpec.class);
+        } catch (InvalidKeySpecException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
+        System.out.println("Generiertes P: " + spec.getP());
+        System.out.println("Generiertes Q: " + spec.getQ());
+        
+        protocol.getKeyNegotiation().setP(new BigInteger(spec.getP().toByteArray()));
+        protocol.getKeyNegotiation().setQ(new BigInteger(spec.getQ().toByteArray()));
         protocol.getKeyNegotiation().setSid(15);
+        
     }
 
     private void addPayloadFirst() {
