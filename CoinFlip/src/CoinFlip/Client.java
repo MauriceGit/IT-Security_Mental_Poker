@@ -1,3 +1,4 @@
+package CoinFlip;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -6,8 +7,6 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 public class Client {
 
@@ -86,5 +85,6 @@ public class Client {
         }
         
     }
+
 
 }
