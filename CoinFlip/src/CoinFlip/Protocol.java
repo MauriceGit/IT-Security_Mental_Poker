@@ -26,7 +26,7 @@ public class Protocol {
     
     public static class ProtocolNegotiation {
         private LinkedList<Version> availableVersions = new LinkedList<Version>();
-        private int version = 0;
+        private String version;
 
         public LinkedList<Version> getAvailableVersions() {
             return availableVersions;
@@ -36,11 +36,11 @@ public class Protocol {
             this.availableVersions = availableVersions;
         }
 
-        public int getVersion() {
+        public String getVersion() {
             return version;
         }
 
-        public void setVersion(int version) {
+        public void setVersion(String version) {
             this.version = version;
         }
 
@@ -58,7 +58,7 @@ public class Protocol {
         }
 
         private String name = "Maurice";
-        private LinkedList<Integer> versions = new LinkedList<Integer>();
+        private LinkedList<String> versions = new LinkedList<String>();
 
         public String getName() {
             return name;
@@ -68,11 +68,11 @@ public class Protocol {
             this.name = name;
         }
 
-        public LinkedList<Integer> getVersions() {
+        public LinkedList<String> getVersions() {
             return versions;
         }
 
-        public void setVersions(LinkedList<Integer> versions) {
+        public void setVersions(LinkedList<String> versions) {
             this.versions = versions;
         }
     }

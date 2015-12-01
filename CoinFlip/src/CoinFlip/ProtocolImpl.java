@@ -1,15 +1,21 @@
 package CoinFlip;
 
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.Security;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Collections;
 import java.util.LinkedList;
 
+import javax.crypto.Cipher;
+
 import org.bouncycastle.jcajce.provider.asymmetric.sra.SRADecryptionKeySpec;
+import org.bouncycastle.jcajce.provider.asymmetric.sra.SRAKeyGenParameterSpec;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,6 +34,8 @@ public class ProtocolImpl {
     public ProtocolImpl() {
         protocol = new Protocol();
         mapper = new ObjectMapper();
+        
+        Security.addProvider(new BouncyCastleProvider());
         try {
             generator = KeyPairGenerator.getInstance("SRA", BouncyCastleProvider.PROVIDER_NAME);
         } catch (NoSuchAlgorithmException e) {
@@ -43,31 +51,13 @@ public class ProtocolImpl {
         //System.out.println(s);
     }
 
-    /**
-     * Test, ob ProtokollID aufsteigend ist.
-     * 
-     * @param protocol
-     * @param before
-     * @return
-     */
     private boolean validateGeneralAttributes(Protocol protocol, Protocol before) {
         return protocol.getProtocolId() == before.getProtocolId() + 1
                 && protocol.getStatusId() == 0 && before.getStatusId() == 0;
     }
 
-    /**
-     * Ob sinnvolle Daten mitgeschickt wurden! Es kann gut sein, dass hier
-     * NullPointerExceptions fliegen!!!! Die werden ausgewertet zu: false,
-     * Validierung fehlgeschlagen!
-     * 
-     * @param protocol
-     * @param before
-     * @return
-     */
-    private boolean validateNewProtocolNegotiation(Protocol protocol) {
-        return protocol.getProtocolNegotiation().getAvailableVersions().size() > 0
-                && protocol.getProtocolNegotiation().getAvailableVersions()
-                        .get(0).getVersions().size() > 0;
+    private boolean validateNewProtocolNegotiation(Protocol protocol) {    
+        return protocol.getProtocolNegotiation().getAvailableVersions().get(0).getVersions().size() > 0;
     }
 
     /**
@@ -87,10 +77,12 @@ public class ProtocolImpl {
                         .get(0).getVersions().size() == before
                         .getProtocolNegotiation().getAvailableVersions().get(0)
                         .getVersions().size();
+        System.out.println("1 - " + res);
         // Version gleich?
         res = res
-                && protocol.getProtocolNegotiation().getVersion() == before
-                        .getProtocolNegotiation().getVersion();
+                && protocol.getProtocolNegotiation().getVersion().equals(before
+                        .getProtocolNegotiation().getVersion());
+        System.out.println("2 - " + res);
         // Steht jeweils das Gleiche drin?
         for (int i = 0; i < protocol.getProtocolNegotiation()
                 .getAvailableVersions().size(); i++) {
@@ -99,9 +91,10 @@ public class ProtocolImpl {
             Protocol.Version v2 = before.getProtocolNegotiation()
                     .getAvailableVersions().get(i);
             for (int j = 0; j < v1.getVersions().size(); j++) {
-                Integer vs1 = v1.getVersions().get(j);
-                Integer vs2 = v2.getVersions().get(j);
-                res = res && vs1 == vs2;
+                String vs1 = v1.getVersions().get(j);
+                String vs2 = v2.getVersions().get(j);
+                res = res && vs1.equals(vs2);
+                System.out.println("3 - " + i + " - " + res);
             }
         }
         return res;
@@ -133,13 +126,40 @@ public class ProtocolImpl {
     }
 
     private boolean validateNewKeyNegotiation(Protocol protocol) {
-        return protocol.getKeyNegotiation().getAvailableSids().size() != 0;
+        
+        for (int s : protocol.getKeyNegotiation().getAvailableSids().get(0).getSids()) {
+            if (s == 0) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 
     private boolean validateNewKeyNegotiationLong(Protocol protocol) {
-        return !protocol.getKeyNegotiation().getP().equals(BigInteger.ZERO)
+        boolean res = !protocol.getKeyNegotiation().getP().equals(BigInteger.ZERO)
                 && !protocol.getKeyNegotiation().getQ().equals(BigInteger.ZERO)
-                && protocol.getKeyNegotiation().getSid() >= 0;
+                && protocol.getKeyNegotiation().getSid() == 0;
+        
+        System.out.println("4 - " + res);
+        System.out.println(protocol.getKeyNegotiation().getSid());
+        
+        try {
+            // create specifications for the key generation.
+            SRAKeyGenParameterSpec specs = new SRAKeyGenParameterSpec(1024, protocol.getKeyNegotiation().getP(), protocol.getKeyNegotiation().getQ());
+    
+            this.generator = KeyPairGenerator.getInstance("SRA", BouncyCastleProvider.PROVIDER_NAME);
+    
+            generator.initialize(specs);
+    
+            // generate a valid SRA key pair for the given p and q.
+            this.keyPair = generator.generateKeyPair();
+        } catch (Exception e) {
+            System.out.println("Oh shit. Something is totally blown.");
+            System.out.println(e);
+        }
+        
+        return res;
     }
 
     private boolean validateOldPayloadFirst(Protocol protocol, Protocol before) {
@@ -208,7 +228,7 @@ public class ProtocolImpl {
      * @return
      */
     private boolean validateChosenVersion(Protocol protocol) {
-        return protocol.getProtocolNegotiation().getVersion() > 0;
+        return !protocol.getProtocolNegotiation().getVersion().equals("");
     }
 
     private void probablyFunnyMessage(Protocol protocol) {
@@ -220,7 +240,7 @@ public class ProtocolImpl {
     }
 
     private boolean iCanHandleTheChosenVersion(Protocol protocol) {
-        return protocol.getProtocolNegotiation().getVersion() == 1;
+        return protocol.getProtocolNegotiation().getVersion().equals("1.0");
     }
 
     /**
@@ -231,34 +251,44 @@ public class ProtocolImpl {
      */
     private boolean validateProtocolStep(Protocol protocol, Protocol before) {
         boolean everythingOK = true;
-
+        
+        
         try {
             int protocolStep = protocol.getProtocolId();
-
+            
+            
+            
             // Allgemeine Tests, die jeden Durchgang erneut geprüft werden
             // müssen!!!
             switch (protocolStep) {
             case 7:
                 everythingOK = everythingOK
                         && validateOldPayloadThird(protocol, before);
+                System.out.println(protocolStep + " - " + everythingOK);
             case 6:
                 everythingOK = everythingOK
                         && validateOldPayloadSecond(protocol, before);
+                System.out.println(protocolStep + " - " + everythingOK);
             case 5:
                 everythingOK = everythingOK
-                        && validateOldPayloadFirst(protocol, before);        
+                        && validateOldPayloadFirst(protocol, before);
+                System.out.println(protocolStep + " - " + everythingOK);
             case 4:
                 everythingOK = everythingOK
                         && validateOldKeyNegotiation(protocol, before);
+                System.out.println(protocolStep + " - " + everythingOK);
             case 3:
             case 2:
                 everythingOK = everythingOK
                         && validateOldProtocolNegotiation(protocol, before);
+                System.out.println(protocolStep + " - " + everythingOK);
             case 1:
             case 0:
                 everythingOK = everythingOK
                         && validateGeneralAttributes(protocol, before);
+                System.out.println(protocolStep + " - " + everythingOK);
             }
+            
 
             // Tests, die nur in dem jeweiligen Schritt einmal getestet werden
             // müssen!!!
@@ -270,7 +300,6 @@ public class ProtocolImpl {
             case 6:
                 everythingOK = everythingOK
                         && validateNewPayloadThird(protocol);
-                p(protocolStep + " == " + everythingOK);
                 break;
             case 5:
                 everythingOK = everythingOK
@@ -281,6 +310,7 @@ public class ProtocolImpl {
                         && validateNewPayloadFirst(protocol);
                 break;
             case 3:
+                // fertig!
                 everythingOK = everythingOK
                         && validateNewKeyNegotiationLong(protocol);
                 break;
@@ -298,7 +328,8 @@ public class ProtocolImpl {
                 everythingOK = everythingOK
                         && validateNewProtocolNegotiation(protocol);
             }
-
+            System.out.println("All right! --> " + everythingOK);
+            
             probablyFunnyMessage(protocol);
         } catch (Exception e) {
             System.out.println("");
@@ -326,7 +357,7 @@ public class ProtocolImpl {
     private void addProtocolNegotiationDataFirst() {
         Protocol.Version v = new Protocol.Version();
         v.setName("Maurice");
-        v.getVersions().add(1);
+        v.getVersions().add("1.0");
         protocol.getProtocolNegotiation().getAvailableVersions().add(v);
     }
 
@@ -337,17 +368,17 @@ public class ProtocolImpl {
     private void addProtocolNegotiationDataSecond() {
         Protocol.Version v = new Protocol.Version();
         v.setName("Maurice");
-        v.getVersions().add(1);
+        v.getVersions().add("1.0");
         protocol.getProtocolNegotiation().getAvailableVersions().add(v);
         // Später hier ansetzen zur Korrektur!
         // TODO: Auf Gleichheit prüfen von dem Anderen und eine gleiche Version
         // auswählen!
-        protocol.getProtocolNegotiation().setVersion(1);
+        protocol.getProtocolNegotiation().setVersion("1.0");
     }
 
     private void addKeyNegotiationFirst() {
         Protocol.Sids sids = new Protocol.Sids();
-        sids.getSids().add(15);
+        sids.getSids().add(0);
         protocol.getKeyNegotiation().getAvailableSids().add(sids);
     }
 
@@ -356,8 +387,6 @@ public class ProtocolImpl {
      * andere die nicht kann, soll er selber Fehler werfen!
      */
     private void addKeyNegotiationSecond() {
-        
-        
         
         // provide a bit-size for the key (1024-bit key in this example).
         generator.initialize(1024);
@@ -391,7 +420,7 @@ public class ProtocolImpl {
         
         protocol.getKeyNegotiation().setP(new BigInteger(spec.getP().toByteArray()));
         protocol.getKeyNegotiation().setQ(new BigInteger(spec.getQ().toByteArray()));
-        protocol.getKeyNegotiation().setSid(15);
+        protocol.getKeyNegotiation().setSid(0);
         
     }
 
@@ -399,35 +428,112 @@ public class ProtocolImpl {
         protocol.getPayload().getInitialCoin().add("HEAD");
         protocol.getPayload().getInitialCoin().add("TAIL");
 
-        // TODO: Tatsächlich Dinge verschlüsseln...
         LinkedList<String> ec = new LinkedList<String>();
-        ec.add("encryptedHEAD");
-        ec.add("encryptedTAIL");
-        protocol.getPayload().setEncryptedCoin(ec);
+        
+        try {
+            Cipher engine = Cipher.getInstance("SRA", BouncyCastleProvider.PROVIDER_NAME);
+    
+            // prepare the engine for encryption.
+            engine.init(Cipher.ENCRYPT_MODE, keyPair.getPublic());
+            
+            // encrypt something.
+            byte[] encryptedHead = engine.doFinal(protocol.getPayload().getInitialCoin().get(0).getBytes("UTF-8"));
+            byte[] encryptedTail = engine.doFinal(protocol.getPayload().getInitialCoin().get(1).getBytes("UTF-8"));
+            
+            ec.add(new String(encryptedHead, "UTF-8"));
+            ec.add(new String(encryptedTail, "UTF-8"));
+            
+            Collections.shuffle(ec);
+            
+            protocol.getPayload().setEncryptedCoin(ec);
+            
+        } catch (Exception e) {
+            System.out.println("Oh shit. The encryption is totally blown.");
+            System.out.println(e);
+        }        
     }
 
     private void addPayloadSecond() {
         protocol.getPayload().setDesiredCoin("TAIL");
-        // TODO: Tatsächlich Dinge verschlüsseln...
-        protocol.getPayload().setEnChosenCoin("EnChosenCoin");
+        
+
+        try {
+            Cipher engine = Cipher.getInstance("SRA", BouncyCastleProvider.PROVIDER_NAME);
+    
+            // prepare the engine for encryption.
+            engine.init(Cipher.ENCRYPT_MODE, keyPair.getPublic());
+            
+            // encrypt something.
+            byte[] enChosenCoin = engine.doFinal(protocol.getPayload().getEncryptedCoin().get(1).getBytes("UTF-8"));
+                        
+            protocol.getPayload().setEnChosenCoin(new String(enChosenCoin, "UTF-8"));
+            
+        } catch (Exception e) {
+            System.out.println("Oh shit. The encryption is totally blown.");
+            System.out.println(e);
+        }
+        
+        
+        
+        
     }
 
     private void addPayloadThird() {
         // TODO: Tatsächlich Dinge verschlüsseln...
-        protocol.getPayload().setDeChosenCoin("DeChosenCoin");
         LinkedList<BigInteger> keyA = new LinkedList<BigInteger>();
-        keyA.add(new BigInteger("80081"));
-        keyA.add(new BigInteger("80082"));
-        protocol.getPayload().setKeyA(keyA);
+        
+        
+        try {
+            Cipher engine = Cipher.getInstance("SRA", BouncyCastleProvider.PROVIDER_NAME);
+            // prepare for decryption
+            engine.init(Cipher.DECRYPT_MODE, keyPair.getPrivate());
+            // decrypt the cipher.
+            byte[] recover = engine.doFinal(protocol.getPayload().getEnChosenCoin().getBytes());
+            
+            protocol.getPayload().setDeChosenCoin(new String(recover, "UTF-8"));
+            
+            keyA.add(new BigInteger(keyPair.getPublic().getFormat()));
+            keyA.add(new BigInteger(keyPair.getPrivate().getFormat()));
+            protocol.getPayload().setKeyA(keyA);
+            
+        } catch (Exception e) {
+            System.out.println("Oh shit. The decryption is totally blown.");
+            System.out.println(e);
+        }
+        
+        
+        
+        
+        
+        
     }
 
     private void addPayloadForth() {
-        // TODO: Tatsächlich Dinge verschlüsseln...
+        
         LinkedList<BigInteger> keyB = new LinkedList<BigInteger>();
-        keyB.add(new BigInteger("800811"));
-        keyB.add(new BigInteger("800822"));
-        protocol.getPayload().setKeyB(keyB);
-        protocol.getPayload().setSignatureA("BigAsSignature");
+        
+        try {
+            
+            Cipher engine = Cipher.getInstance("SRA", BouncyCastleProvider.PROVIDER_NAME);
+            // prepare for decryption
+            engine.init(Cipher.DECRYPT_MODE, keyPair.getPrivate());
+            // decrypt the cipher.
+            byte[] recover = engine.doFinal(protocol.getPayload().getDeChosenCoin().getBytes());
+            String result = new String(recover, "UTF-8");
+            
+            System.out.println("The final Result is: " + result);
+            
+            System.out.println("And you chose: " + protocol.getPayload().getDesiredCoin());
+            
+            
+            keyB.add(new BigInteger(keyPair.getPublic().getFormat()));
+            keyB.add(new BigInteger(keyPair.getPrivate().getFormat()));
+            protocol.getPayload().setKeyB(keyB);
+            protocol.getPayload().setSignatureA("BigAsSignature");
+        } catch (Exception e) {
+            System.out.println("Oh shit. The decryption is totally blown.");
+            System.out.println(e);
+        }
     }
 
     /**
@@ -438,7 +544,7 @@ public class ProtocolImpl {
      * @throws JsonProcessingException
      */
     public String calcAndRespondToProtocolStep() throws JsonProcessingException {
-
+        System.out.println("1");
         /**
          * Hier Berechnungen durchführen und im protocol rumschreiben :)
          */
@@ -449,30 +555,39 @@ public class ProtocolImpl {
 
         switch (protocolStep) {
         case 7:
+            // fertig!
             addPayloadForth();
             break;
         case 6:
+            // fertig!
             addPayloadThird();
             break;
         case 5:
+            // fertig!
             addPayloadSecond();
             break;
         case 4:
+            // fertig!
             addPayloadFirst();
             break;
         case 3:
+            // fertig!
             addKeyNegotiationSecond();
             break;
         case 2:
+            // fertig!
             addKeyNegotiationFirst();
             break;
         case 1:
+            // fertig!
             addProtocolNegotiationDataSecond();
             break;
         case 0:
+            // fertig!
             addGeneralData();
             addProtocolNegotiationDataFirst();
         }
+        System.out.println("Step " + protocolStep + " finished.");
 
         return mapper.writeValueAsString(protocol);
     }
@@ -497,7 +612,7 @@ public class ProtocolImpl {
         }
 
         if (!validateProtocolStep(newProtocol, protocol)) {
-            p("Error");
+            System.out.println("What the hell...");
             return Status.PROTOCOL_ERROR;
 
         }

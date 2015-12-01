@@ -27,6 +27,7 @@ public class Client {
             if (protocolImpl.statusAndRegister(json) == Status.PROTOCOL_OK) {
                 out.println(protocolImpl.calcAndRespondToProtocolStep());
             } else {
+                System.out.println("Break?");
                 break;
             }
         }
