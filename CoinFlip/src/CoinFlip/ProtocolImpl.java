@@ -146,7 +146,7 @@ public class ProtocolImpl {
         
         try {
             // create specifications for the key generation.
-            SRAKeyGenParameterSpec specs = new SRAKeyGenParameterSpec(1024, protocol.getKeyNegotiation().getP(), protocol.getKeyNegotiation().getQ());
+            SRAKeyGenParameterSpec specs = new SRAKeyGenParameterSpec(4096, protocol.getKeyNegotiation().getP(), protocol.getKeyNegotiation().getQ());
     
             this.generator = KeyPairGenerator.getInstance("SRA", BouncyCastleProvider.PROVIDER_NAME);
     
@@ -203,6 +203,9 @@ public class ProtocolImpl {
     }
 
     private boolean validateNewPayloadSecond(Protocol protocol) {
+    	System.out.println(protocol.getPayload().getInitialCoin().get(0));
+    	System.out.println(protocol.getPayload().getInitialCoin().get(1));
+    	System.out.println("EnChosenCoin: '" + protocol.getPayload().getEnChosenCoin() + "'");
         return (protocol.getPayload().getDesiredCoin().equals(protocol.getPayload()
                 .getInitialCoin().get(0)) || protocol.getPayload()
                 .getDesiredCoin().equals(protocol.getPayload().getInitialCoin()
@@ -288,7 +291,7 @@ public class ProtocolImpl {
                         && validateGeneralAttributes(protocol, before);
                 System.out.println(protocolStep + " - " + everythingOK);
             }
-            
+            System.out.println("All right for the first part! --> " + everythingOK);
 
             // Tests, die nur in dem jeweiligen Schritt einmal getestet werden
             // müssen!!!
@@ -389,7 +392,7 @@ public class ProtocolImpl {
     private void addKeyNegotiationSecond() {
         
         // provide a bit-size for the key (1024-bit key in this example).
-        generator.initialize(1024);
+        generator.initialize(4096);
         // generate the key pair.
         keyPair = generator.generateKeyPair();
         
@@ -425,8 +428,8 @@ public class ProtocolImpl {
     }
 
     private void addPayloadFirst() {
-        protocol.getPayload().getInitialCoin().add("HEAD");
-        protocol.getPayload().getInitialCoin().add("TAIL");
+        protocol.getPayload().getInitialCoin().add("H");
+        protocol.getPayload().getInitialCoin().add("T");
 
         LinkedList<String> ec = new LinkedList<String>();
         
@@ -462,11 +465,12 @@ public class ProtocolImpl {
     
             // prepare the engine for encryption.
             engine.init(Cipher.ENCRYPT_MODE, keyPair.getPublic());
-            
+            System.out.println("set EnChosenCoin soon... This --> " + protocol.getPayload().getEncryptedCoin().get(1));
             // encrypt something.
             byte[] enChosenCoin = engine.doFinal(protocol.getPayload().getEncryptedCoin().get(1).getBytes("UTF-8"));
-                        
+            System.out.println("set EnChosenCoin: " + new String(enChosenCoin, "UTF-8"));            
             protocol.getPayload().setEnChosenCoin(new String(enChosenCoin, "UTF-8"));
+            System.out.println("set EnChosenCoin: " + new String(enChosenCoin, "UTF-8"));
             
         } catch (Exception e) {
             System.out.println("Oh shit. The encryption is totally blown.");
