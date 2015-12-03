@@ -6,7 +6,11 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.Security;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -15,6 +19,7 @@ import javax.crypto.Cipher;
 import javax.xml.bind.DatatypeConverter;
 
 import org.bouncycastle.jcajce.provider.asymmetric.sra.SRADecryptionKeySpec;
+import org.bouncycastle.jcajce.provider.asymmetric.sra.SRAEncryptionKeySpec;
 import org.bouncycastle.jcajce.provider.asymmetric.sra.SRAKeyGenParameterSpec;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
@@ -438,8 +443,8 @@ public class ProtocolImpl {
             engine.init(Cipher.ENCRYPT_MODE, keyPair.getPublic());
             
             // encrypt something.
-            byte[] encryptedHead = engine.doFinal(DatatypeConverter.parseHexBinary(protocol.getPayload().getInitialCoin().get(0)));
-            byte[] encryptedTail = engine.doFinal(DatatypeConverter.parseHexBinary(protocol.getPayload().getInitialCoin().get(1)));
+            byte[] encryptedHead = engine.doFinal(protocol.getPayload().getInitialCoin().get(0).getBytes());
+            byte[] encryptedTail = engine.doFinal(protocol.getPayload().getInitialCoin().get(1).getBytes());
             
             ec.add(Hex.toHexString(encryptedHead));
             ec.add(Hex.toHexString(encryptedTail));            
@@ -490,16 +495,18 @@ public class ProtocolImpl {
             // prepare for decryption
             engine.init(Cipher.DECRYPT_MODE, keyPair.getPrivate());
             // decrypt the cipher.
+            System.out.println("EnChosenCoin: " + protocol.getPayload().getEnChosenCoin());
             byte[] recover = engine.doFinal(DatatypeConverter.parseHexBinary(protocol.getPayload().getEnChosenCoin()));
-            
+            System.out.println("Test1.");
             protocol.getPayload().setDeChosenCoin(Hex.toHexString(recover));
-            
-            keyA.add(new BigInteger(keyPair.getPublic().getFormat()));
-            keyA.add(new BigInteger(keyPair.getPrivate().getFormat()));
+            System.out.println("Test2.");
+            keyA.add(((RSAPublicKey)  keyPair.getPublic()).getPublicExponent());
+            keyA.add(((RSAPrivateKey) keyPair.getPrivate()).getPrivateExponent());
+            System.out.println("Test4.");
             protocol.getPayload().setKeyA(keyA);
             
         } catch (Exception e) {
-            System.out.println("Oh shit. The decryption is totally blown.");
+            System.out.println("Oh shit. The decryption is totally blown. honestly.");
             System.out.println(e);
         }
         
@@ -514,22 +521,49 @@ public class ProtocolImpl {
         
         LinkedList<BigInteger> keyB = new LinkedList<BigInteger>();
         
+        
         try {
             
             Cipher engine = Cipher.getInstance("SRA", BouncyCastleProvider.PROVIDER_NAME);
+            System.out.println("test1");
+            
+            KeyFactory factory = KeyFactory.getInstance("SRA", BouncyCastleProvider.PROVIDER_NAME);
+            
+            BigInteger p = protocol.getKeyNegotiation().getP();
+            BigInteger q = protocol.getKeyNegotiation().getQ();
+            BigInteger n = p.multiply(q);
+            System.out.println("n: " + n);
+            BigInteger e = protocol.getPayload().getKeyA().get(0);
+            System.out.println("e: " + e);
+            BigInteger d = protocol.getPayload().getKeyA().get(1);
+            System.out.println("d: " + d);
+            
+            PrivateKey privateKey = factory.generatePrivate(new SRADecryptionKeySpec(
+            		p,
+            		q, 
+            		d, 
+            		e));
+            PublicKey publicKey = factory.generatePublic(new SRAEncryptionKeySpec(n, e));
+    		
+    		KeyPair newKeyPair = new KeyPair(publicKey, privateKey);
+            
+            
+            
+
+            System.out.println("test2");
             // prepare for decryption
-            engine.init(Cipher.DECRYPT_MODE, keyPair.getPrivate());
+            engine.init(Cipher.DECRYPT_MODE, newKeyPair.getPrivate());
             // decrypt the cipher.
             byte[] recover = engine.doFinal(DatatypeConverter.parseHexBinary(protocol.getPayload().getDeChosenCoin()));
+            System.out.println("test3");
             String result = Hex.toHexString(recover);
             
             System.out.println("The final Result is: " + result);
             
             System.out.println("And you chose: " + protocol.getPayload().getDesiredCoin());
             
-            
-            keyB.add(new BigInteger(keyPair.getPublic().getFormat()));
-            keyB.add(new BigInteger(keyPair.getPrivate().getFormat()));
+            keyB.add(((RSAPublicKey)  keyPair.getPublic()).getPublicExponent());
+            keyB.add(((RSAPrivateKey) keyPair.getPrivate()).getPrivateExponent());
             protocol.getPayload().setKeyB(keyB);
             protocol.getPayload().setSignatureA("BigAsSignature");
         } catch (Exception e) {
