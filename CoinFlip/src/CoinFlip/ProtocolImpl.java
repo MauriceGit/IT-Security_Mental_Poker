@@ -1,7 +1,6 @@
 package CoinFlip;
 
 import java.math.BigInteger;
-import java.nio.charset.Charset;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -13,10 +12,12 @@ import java.util.Collections;
 import java.util.LinkedList;
 
 import javax.crypto.Cipher;
+import javax.xml.bind.DatatypeConverter;
 
 import org.bouncycastle.jcajce.provider.asymmetric.sra.SRADecryptionKeySpec;
 import org.bouncycastle.jcajce.provider.asymmetric.sra.SRAKeyGenParameterSpec;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.encoders.Hex;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,6 +37,7 @@ public class ProtocolImpl {
         mapper = new ObjectMapper();
         
         Security.addProvider(new BouncyCastleProvider());
+        System.out.println("Bouncy Castle geadded.");
         try {
             generator = KeyPairGenerator.getInstance("SRA", BouncyCastleProvider.PROVIDER_NAME);
         } catch (NoSuchAlgorithmException e) {
@@ -45,10 +47,6 @@ public class ProtocolImpl {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-    }
-
-    private void p(String s) {
-        //System.out.println(s);
     }
 
     private boolean validateGeneralAttributes(Protocol protocol, Protocol before) {
@@ -440,12 +438,11 @@ public class ProtocolImpl {
             engine.init(Cipher.ENCRYPT_MODE, keyPair.getPublic());
             
             // encrypt something.
-            byte[] encryptedHead = engine.doFinal(protocol.getPayload().getInitialCoin().get(0).getBytes());
-            byte[] encryptedTail = engine.doFinal(protocol.getPayload().getInitialCoin().get(1).getBytes());
+            byte[] encryptedHead = engine.doFinal(DatatypeConverter.parseHexBinary(protocol.getPayload().getInitialCoin().get(0)));
+            byte[] encryptedTail = engine.doFinal(DatatypeConverter.parseHexBinary(protocol.getPayload().getInitialCoin().get(1)));
             
-            ec.add(new BigInteger(encryptedHead).toString(16));
-            ec.add(new BigInteger(encryptedTail).toString(16));
-            
+            ec.add(Hex.toHexString(encryptedHead));
+            ec.add(Hex.toHexString(encryptedTail));            
             
             Collections.shuffle(ec);
             
@@ -468,9 +465,9 @@ public class ProtocolImpl {
             engine.init(Cipher.ENCRYPT_MODE, keyPair.getPublic());
             System.out.println("set EnChosenCoin soon... This --> " + protocol.getPayload().getEncryptedCoin().get(1));
             // encrypt something.
-            byte[] enChosenCoin = engine.doFinal(new BigInteger(protocol.getPayload().getEncryptedCoin().get(1).getBytes()).toByteArray());
+            byte[] enChosenCoin = engine.doFinal(DatatypeConverter.parseHexBinary(protocol.getPayload().getEncryptedCoin().get(1)));
             //System.out.println("set EnChosenCoin: " + new String(enChosenCoin, "UTF-8"));            
-            protocol.getPayload().setEnChosenCoin(new BigInteger(enChosenCoin).toString(16));
+            protocol.getPayload().setEnChosenCoin(Hex.toHexString(enChosenCoin));
             //System.out.println("set EnChosenCoin: " + new String(enChosenCoin, "UTF-8"));
             
         } catch (Exception e) {
@@ -493,9 +490,9 @@ public class ProtocolImpl {
             // prepare for decryption
             engine.init(Cipher.DECRYPT_MODE, keyPair.getPrivate());
             // decrypt the cipher.
-            byte[] recover = engine.doFinal(new BigInteger(protocol.getPayload().getEnChosenCoin()).toByteArray());
+            byte[] recover = engine.doFinal(DatatypeConverter.parseHexBinary(protocol.getPayload().getEnChosenCoin()));
             
-            protocol.getPayload().setDeChosenCoin(new BigInteger(recover).toString(16));
+            protocol.getPayload().setDeChosenCoin(Hex.toHexString(recover));
             
             keyA.add(new BigInteger(keyPair.getPublic().getFormat()));
             keyA.add(new BigInteger(keyPair.getPrivate().getFormat()));
@@ -523,8 +520,8 @@ public class ProtocolImpl {
             // prepare for decryption
             engine.init(Cipher.DECRYPT_MODE, keyPair.getPrivate());
             // decrypt the cipher.
-            byte[] recover = engine.doFinal(new BigInteger(protocol.getPayload().getDeChosenCoin()).toByteArray());
-            String result = new BigInteger(recover).toString(16);
+            byte[] recover = engine.doFinal(DatatypeConverter.parseHexBinary(protocol.getPayload().getDeChosenCoin()));
+            String result = Hex.toHexString(recover);
             
             System.out.println("The final Result is: " + result);
             
