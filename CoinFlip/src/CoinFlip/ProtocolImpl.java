@@ -146,8 +146,8 @@ public class ProtocolImpl {
         
         try {
             // create specifications for the key generation.
-            SRAKeyGenParameterSpec specs = new SRAKeyGenParameterSpec(4096, protocol.getKeyNegotiation().getP(), protocol.getKeyNegotiation().getQ());
-    
+            SRAKeyGenParameterSpec specs = new SRAKeyGenParameterSpec(2048, protocol.getKeyNegotiation().getP(), protocol.getKeyNegotiation().getQ());
+            
             this.generator = KeyPairGenerator.getInstance("SRA", BouncyCastleProvider.PROVIDER_NAME);
     
             generator.initialize(specs);
@@ -392,7 +392,7 @@ public class ProtocolImpl {
     private void addKeyNegotiationSecond() {
         
         // provide a bit-size for the key (1024-bit key in this example).
-        generator.initialize(4096);
+        generator.initialize(2048);
         // generate the key pair.
         keyPair = generator.generateKeyPair();
         
@@ -428,8 +428,8 @@ public class ProtocolImpl {
     }
 
     private void addPayloadFirst() {
-        protocol.getPayload().getInitialCoin().add("H");
-        protocol.getPayload().getInitialCoin().add("T");
+        protocol.getPayload().getInitialCoin().add("HEAD");
+        protocol.getPayload().getInitialCoin().add("TAIL");
 
         LinkedList<String> ec = new LinkedList<String>();
         
@@ -440,11 +440,12 @@ public class ProtocolImpl {
             engine.init(Cipher.ENCRYPT_MODE, keyPair.getPublic());
             
             // encrypt something.
-            byte[] encryptedHead = engine.doFinal(protocol.getPayload().getInitialCoin().get(0).getBytes("UTF-8"));
-            byte[] encryptedTail = engine.doFinal(protocol.getPayload().getInitialCoin().get(1).getBytes("UTF-8"));
+            byte[] encryptedHead = engine.doFinal(protocol.getPayload().getInitialCoin().get(0).getBytes());
+            byte[] encryptedTail = engine.doFinal(protocol.getPayload().getInitialCoin().get(1).getBytes());
             
-            ec.add(new String(encryptedHead, "UTF-8"));
-            ec.add(new String(encryptedTail, "UTF-8"));
+            ec.add(new BigInteger(encryptedHead).toString(16));
+            ec.add(new BigInteger(encryptedTail).toString(16));
+            
             
             Collections.shuffle(ec);
             
@@ -467,10 +468,10 @@ public class ProtocolImpl {
             engine.init(Cipher.ENCRYPT_MODE, keyPair.getPublic());
             System.out.println("set EnChosenCoin soon... This --> " + protocol.getPayload().getEncryptedCoin().get(1));
             // encrypt something.
-            byte[] enChosenCoin = engine.doFinal(protocol.getPayload().getEncryptedCoin().get(1).getBytes("UTF-8"));
-            System.out.println("set EnChosenCoin: " + new String(enChosenCoin, "UTF-8"));            
-            protocol.getPayload().setEnChosenCoin(new String(enChosenCoin, "UTF-8"));
-            System.out.println("set EnChosenCoin: " + new String(enChosenCoin, "UTF-8"));
+            byte[] enChosenCoin = engine.doFinal(new BigInteger(protocol.getPayload().getEncryptedCoin().get(1).getBytes()).toByteArray());
+            //System.out.println("set EnChosenCoin: " + new String(enChosenCoin, "UTF-8"));            
+            protocol.getPayload().setEnChosenCoin(new BigInteger(enChosenCoin).toString(16));
+            //System.out.println("set EnChosenCoin: " + new String(enChosenCoin, "UTF-8"));
             
         } catch (Exception e) {
             System.out.println("Oh shit. The encryption is totally blown.");
@@ -492,9 +493,9 @@ public class ProtocolImpl {
             // prepare for decryption
             engine.init(Cipher.DECRYPT_MODE, keyPair.getPrivate());
             // decrypt the cipher.
-            byte[] recover = engine.doFinal(protocol.getPayload().getEnChosenCoin().getBytes());
+            byte[] recover = engine.doFinal(new BigInteger(protocol.getPayload().getEnChosenCoin()).toByteArray());
             
-            protocol.getPayload().setDeChosenCoin(new String(recover, "UTF-8"));
+            protocol.getPayload().setDeChosenCoin(new BigInteger(recover).toString(16));
             
             keyA.add(new BigInteger(keyPair.getPublic().getFormat()));
             keyA.add(new BigInteger(keyPair.getPrivate().getFormat()));
@@ -522,8 +523,8 @@ public class ProtocolImpl {
             // prepare for decryption
             engine.init(Cipher.DECRYPT_MODE, keyPair.getPrivate());
             // decrypt the cipher.
-            byte[] recover = engine.doFinal(protocol.getPayload().getDeChosenCoin().getBytes());
-            String result = new String(recover, "UTF-8");
+            byte[] recover = engine.doFinal(new BigInteger(protocol.getPayload().getDeChosenCoin()).toByteArray());
+            String result = new BigInteger(recover).toString(16);
             
             System.out.println("The final Result is: " + result);
             
