@@ -517,6 +517,28 @@ public class ProtocolImpl {
         
     }
 
+    public String convertHexToString(String hex){
+
+  	  StringBuilder sb = new StringBuilder();
+  	  StringBuilder temp = new StringBuilder();
+  	  
+  	  //49204c6f7665204a617661 split into two characters 49, 20, 4c...
+  	  for( int i=0; i<hex.length()-1; i+=2 ){
+  		  
+  	      //grab the hex in pairs
+  	      String output = hex.substring(i, (i + 2));
+  	      //convert hex to decimal
+  	      int decimal = Integer.parseInt(output, 16);
+  	      //convert the decimal to character
+  	      sb.append((char)decimal);
+  		  
+  	      temp.append(decimal);
+  	  }
+  	  System.out.println("Decimal : " + temp.toString());
+  	  
+  	  return sb.toString();
+    }
+    
     private void addPayloadForth() {
         
         LinkedList<BigInteger> keyB = new LinkedList<BigInteger>();
@@ -552,13 +574,15 @@ public class ProtocolImpl {
 
             System.out.println("test2");
             // prepare for decryption
-            engine.init(Cipher.DECRYPT_MODE, newKeyPair.getPrivate());
+            engine.init(Cipher.DECRYPT_MODE, keyPair.getPrivate());
             // decrypt the cipher.
             byte[] recover = engine.doFinal(DatatypeConverter.parseHexBinary(protocol.getPayload().getDeChosenCoin()));
             System.out.println("test3");
             String result = Hex.toHexString(recover);
             
             System.out.println("The final Result is: " + result);
+            
+            System.out.println(convertHexToString(result));
             
             System.out.println("And you chose: " + protocol.getPayload().getDesiredCoin());
             

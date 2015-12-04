@@ -37,12 +37,12 @@ public class Client {
     
     
     private static Socket createServerSocket() throws IOException {
-        ServerSocket server = new ServerSocket(12345);
+        ServerSocket server = new ServerSocket(4444);
         return server.accept();
     }
     
     private static Socket createClientSocket() throws UnknownHostException, IOException {
-        return new Socket("127.0.0.1", 12345);
+        return new Socket("172.26.1.230", 4444);
     }
     
     
