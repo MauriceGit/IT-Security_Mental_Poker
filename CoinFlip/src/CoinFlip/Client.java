@@ -42,7 +42,8 @@ public class Client {
     
     private static Socket createClientSocket() throws UnknownHostException, IOException {
     	//return new Socket("127.0.0.1", 4444);
-    	return new Socket("54.77.97.90", 4444);
+    	//return new Socket("54.77.97.90", 4444);
+    	return new Socket("192.168.2.187", 4444);
     }
     
     
