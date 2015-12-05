@@ -14,6 +14,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.Random;
 
 import javax.crypto.Cipher;
 import javax.xml.bind.DatatypeConverter;
@@ -42,7 +43,6 @@ public class ProtocolImpl {
         mapper = new ObjectMapper();
         
         Security.addProvider(new BouncyCastleProvider());
-        System.out.println("Bouncy Castle geadded.");
         try {
             generator = KeyPairGenerator.getInstance("SRA", BouncyCastleProvider.PROVIDER_NAME);
         } catch (NoSuchAlgorithmException e) {
@@ -80,12 +80,10 @@ public class ProtocolImpl {
                         .get(0).getVersions().size() == before
                         .getProtocolNegotiation().getAvailableVersions().get(0)
                         .getVersions().size();
-        System.out.println("1 - " + res);
         // Version gleich?
         res = res
                 && protocol.getProtocolNegotiation().getVersion().equals(before
                         .getProtocolNegotiation().getVersion());
-        System.out.println("2 - " + res);
         // Steht jeweils das Gleiche drin?
         for (int i = 0; i < protocol.getProtocolNegotiation()
                 .getAvailableVersions().size(); i++) {
@@ -97,7 +95,6 @@ public class ProtocolImpl {
                 String vs1 = v1.getVersions().get(j);
                 String vs2 = v2.getVersions().get(j);
                 res = res && vs1.equals(vs2);
-                System.out.println("3 - " + i + " - " + res);
             }
         }
         return res;
@@ -143,9 +140,6 @@ public class ProtocolImpl {
         boolean res = !protocol.getKeyNegotiation().getP().equals(BigInteger.ZERO)
                 && !protocol.getKeyNegotiation().getQ().equals(BigInteger.ZERO)
                 && protocol.getKeyNegotiation().getSid() == 0;
-        
-        System.out.println("4 - " + res);
-        System.out.println(protocol.getKeyNegotiation().getSid());
         
         try {
             // create specifications for the key generation.
@@ -206,9 +200,6 @@ public class ProtocolImpl {
     }
 
     private boolean validateNewPayloadSecond(Protocol protocol) {
-    	System.out.println(protocol.getPayload().getInitialCoin().get(0));
-    	System.out.println(protocol.getPayload().getInitialCoin().get(1));
-    	System.out.println("EnChosenCoin: '" + protocol.getPayload().getEnChosenCoin() + "'");
         return (protocol.getPayload().getDesiredCoin().equals(protocol.getPayload()
                 .getInitialCoin().get(0)) || protocol.getPayload()
                 .getDesiredCoin().equals(protocol.getPayload().getInitialCoin()
@@ -270,31 +261,24 @@ public class ProtocolImpl {
             case 7:
                 everythingOK = everythingOK
                         && validateOldPayloadThird(protocol, before);
-                System.out.println(protocolStep + " - " + everythingOK);
             case 6:
                 everythingOK = everythingOK
                         && validateOldPayloadSecond(protocol, before);
-                System.out.println(protocolStep + " - " + everythingOK);
             case 5:
                 everythingOK = everythingOK
                         && validateOldPayloadFirst(protocol, before);
-                System.out.println(protocolStep + " - " + everythingOK);
             case 4:
                 everythingOK = everythingOK
                         && validateOldKeyNegotiation(protocol, before);
-                System.out.println(protocolStep + " - " + everythingOK);
             case 3:
             case 2:
                 everythingOK = everythingOK
                         && validateOldProtocolNegotiation(protocol, before);
-                System.out.println(protocolStep + " - " + everythingOK);
             case 1:
             case 0:
                 everythingOK = everythingOK
                         && validateGeneralAttributes(protocol, before);
-                System.out.println(protocolStep + " - " + everythingOK);
             }
-            System.out.println("All right for the first part! --> " + everythingOK);
 
             // Tests, die nur in dem jeweiligen Schritt einmal getestet werden
             // müssen!!!
@@ -334,15 +318,12 @@ public class ProtocolImpl {
                 everythingOK = everythingOK
                         && validateNewProtocolNegotiation(protocol);
             }
-            System.out.println("All right! --> " + everythingOK);
             
             probablyFunnyMessage(protocol);
         } catch (Exception e) {
-            System.out.println("");
             System.out
                     .println("Something went wrong and came out with this error:");
             System.out.println(e);
-            System.out.println("");
             return false;
         }
 
@@ -421,9 +402,6 @@ public class ProtocolImpl {
             e.printStackTrace();
         }
         
-        System.out.println("Generiertes P: " + spec.getP());
-        System.out.println("Generiertes Q: " + spec.getQ());
-        
         protocol.getKeyNegotiation().setP(new BigInteger(spec.getP().toByteArray()));
         protocol.getKeyNegotiation().setQ(new BigInteger(spec.getQ().toByteArray()));
         protocol.getKeyNegotiation().setSid(0);
@@ -468,9 +446,9 @@ public class ProtocolImpl {
     
             // prepare the engine for encryption.
             engine.init(Cipher.ENCRYPT_MODE, keyPair.getPublic());
-            System.out.println("set EnChosenCoin soon... This --> " + protocol.getPayload().getEncryptedCoin().get(1));
             // encrypt something.
-            byte[] enChosenCoin = engine.doFinal(DatatypeConverter.parseHexBinary(protocol.getPayload().getEncryptedCoin().get(1)));
+            Random rand = new Random();
+            byte[] enChosenCoin = engine.doFinal(DatatypeConverter.parseHexBinary(protocol.getPayload().getEncryptedCoin().get(rand.nextInt(2))));
             //System.out.println("set EnChosenCoin: " + new String(enChosenCoin, "UTF-8"));            
             protocol.getPayload().setEnChosenCoin(Hex.toHexString(enChosenCoin));
             //System.out.println("set EnChosenCoin: " + new String(enChosenCoin, "UTF-8"));
@@ -495,14 +473,10 @@ public class ProtocolImpl {
             // prepare for decryption
             engine.init(Cipher.DECRYPT_MODE, keyPair.getPrivate());
             // decrypt the cipher.
-            System.out.println("EnChosenCoin: " + protocol.getPayload().getEnChosenCoin());
             byte[] recover = engine.doFinal(DatatypeConverter.parseHexBinary(protocol.getPayload().getEnChosenCoin()));
-            System.out.println("Test1.");
             protocol.getPayload().setDeChosenCoin(Hex.toHexString(recover));
-            System.out.println("Test2.");
             keyA.add(((RSAPublicKey)  keyPair.getPublic()).getPublicExponent());
             keyA.add(((RSAPrivateKey) keyPair.getPrivate()).getPrivateExponent());
-            System.out.println("Test4.");
             protocol.getPayload().setKeyA(keyA);
             
         } catch (Exception e) {
@@ -534,7 +508,6 @@ public class ProtocolImpl {
   		  
   	      temp.append(decimal);
   	  }
-  	  System.out.println("Decimal : " + temp.toString());
   	  
   	  return sb.toString();
     }
@@ -547,18 +520,13 @@ public class ProtocolImpl {
         try {
             
             Cipher engine = Cipher.getInstance("SRA", BouncyCastleProvider.PROVIDER_NAME);
-            System.out.println("test1");
-            
             KeyFactory factory = KeyFactory.getInstance("SRA", BouncyCastleProvider.PROVIDER_NAME);
             
             BigInteger p = protocol.getKeyNegotiation().getP();
             BigInteger q = protocol.getKeyNegotiation().getQ();
             BigInteger n = p.multiply(q);
-            System.out.println("n: " + n);
             BigInteger e = protocol.getPayload().getKeyA().get(0);
-            System.out.println("e: " + e);
             BigInteger d = protocol.getPayload().getKeyA().get(1);
-            System.out.println("d: " + d);
             
             PrivateKey privateKey = factory.generatePrivate(new SRADecryptionKeySpec(
             		p,
@@ -568,21 +536,15 @@ public class ProtocolImpl {
             PublicKey publicKey = factory.generatePublic(new SRAEncryptionKeySpec(n, e));
     		
     		KeyPair newKeyPair = new KeyPair(publicKey, privateKey);
-            
-            
-            
 
-            System.out.println("test2");
             // prepare for decryption
             engine.init(Cipher.DECRYPT_MODE, keyPair.getPrivate());
             // decrypt the cipher.
             byte[] recover = engine.doFinal(DatatypeConverter.parseHexBinary(protocol.getPayload().getDeChosenCoin()));
-            System.out.println("test3");
+
             String result = Hex.toHexString(recover);
             
-            System.out.println("The final Result is: " + result);
-            
-            System.out.println(convertHexToString(result));
+            System.out.println("Coin flip was:" + convertHexToString(result));
             
             System.out.println("And you chose: " + protocol.getPayload().getDesiredCoin());
             
@@ -604,7 +566,6 @@ public class ProtocolImpl {
      * @throws JsonProcessingException
      */
     public String calcAndRespondToProtocolStep() throws JsonProcessingException {
-        System.out.println("1");
         /**
          * Hier Berechnungen durchführen und im protocol rumschreiben :)
          */

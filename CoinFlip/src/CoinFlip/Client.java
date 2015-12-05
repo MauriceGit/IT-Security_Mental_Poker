@@ -27,7 +27,6 @@ public class Client {
             if (protocolImpl.statusAndRegister(json) == Status.PROTOCOL_OK) {
                 out.println(protocolImpl.calcAndRespondToProtocolStep());
             } else {
-                System.out.println("Break?");
                 break;
             }
         }
@@ -42,7 +41,8 @@ public class Client {
     }
     
     private static Socket createClientSocket() throws UnknownHostException, IOException {
-        return new Socket("172.26.1.230", 4444);
+    	//return new Socket("127.0.0.1", 4444);
+    	return new Socket("54.77.97.90", 4444);
     }
     
     
