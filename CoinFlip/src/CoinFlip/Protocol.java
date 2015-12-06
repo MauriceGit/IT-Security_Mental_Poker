@@ -3,6 +3,9 @@ package CoinFlip;
 import java.math.BigInteger;
 import java.util.LinkedList;
 
+import com.fasterxml.jackson.annotation.JsonFilter;
+
+@JsonFilter("myFilter")
 public class Protocol {
 
     /**
@@ -54,19 +57,19 @@ public class Protocol {
     public static class Version {
         @Override
         public String toString() {
-            return "Version [name=" + name + ", versions=" + versions + "]";
+            return "Version [versions=" + versions + "]";
         }
 
-        private String name = "Maurice";
+        //private String name = "Maurice";
         private LinkedList<String> versions = new LinkedList<String>();
 
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
+//        public String getName() {
+//            return name;
+//        }
+//
+//        public void setName(String name) {
+//            this.name = name;
+//        }
 
         public LinkedList<String> getVersions() {
             return versions;
