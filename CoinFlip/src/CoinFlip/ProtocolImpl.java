@@ -27,8 +27,6 @@ import org.bouncycastle.jcajce.provider.asymmetric.sra.SRAKeyGenParameterSpec;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -50,9 +48,10 @@ public class ProtocolImpl {
 
 	public ProtocolImpl() {
 		protocol = new Protocol();
-		mapper = new ObjectMapper();//.configure(Feature.AUTO_CLOSE_SOURCE, false)
-				//.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
-		//mapper.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
+		mapper = new ObjectMapper();// .configure(Feature.AUTO_CLOSE_SOURCE,
+									// false)
+		// .configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+		// mapper.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
 
 		Security.addProvider(new BouncyCastleProvider());
 		try {
@@ -129,9 +128,10 @@ public class ProtocolImpl {
 					.getAvailableSids();
 			LinkedList<Protocol.Sids> s2 = before.getKeyNegotiation()
 					.getAvailableSids();
-			for (int j = 0; j < s1.size(); j++) {
+
+			for (int j = 0; j < s1.get(i).getSids().size(); j++) {
 				res = res
-						&& s2.get(i).getSids().get(j) == s2.get(i).getSids()
+						&& s1.get(i).getSids().get(j) == s2.get(i).getSids()
 								.get(j);
 			}
 		}
@@ -235,9 +235,48 @@ public class ProtocolImpl {
 	}
 
 	private boolean validateNewPayloadForth(Protocol protocol) {
-		return !protocol.getPayload().getKeyB().get(0).equals(BigInteger.ZERO)
+		boolean res = !protocol.getPayload().getKeyB().get(0).equals(BigInteger.ZERO)
 				&& !protocol.getPayload().getKeyB().get(1)
 						.equals(BigInteger.ZERO);
+		try {
+			Cipher engine = Cipher.getInstance(
+					"SRA/NONE/OAEPWITHSHA512ANDMGF1PADDING",
+					BouncyCastleProvider.PROVIDER_NAME);
+			KeyFactory factory = KeyFactory.getInstance("SRA",
+					BouncyCastleProvider.PROVIDER_NAME);
+	
+			BigInteger p = protocol.getKeyNegotiation().getP();
+			BigInteger q = protocol.getKeyNegotiation().getQ();
+			BigInteger n = p.multiply(q);
+			BigInteger e = protocol.getPayload().getKeyA().get(0);
+			BigInteger d = protocol.getPayload().getKeyA().get(1);
+	
+			PrivateKey privateKey = factory
+					.generatePrivate(new SRADecryptionKeySpec(p, q, d, e));
+			PublicKey publicKey = factory
+					.generatePublic(new SRAEncryptionKeySpec(n, e));
+	
+			KeyPair newKeyPair = new KeyPair(publicKey, privateKey);
+			
+			// prepare for decryption
+			engine.init(Cipher.DECRYPT_MODE, newKeyPair.getPrivate());
+			// decrypt the cipher.
+			byte[] recover = engine.doFinal(DatatypeConverter
+					.parseHexBinary(protocol.getPayload().getDeChosenCoin()));
+
+			String result = Hex.toHexString(recover);
+
+			System.out.println("Coin flip was:" + convertHexToString(result));
+
+			System.out.println("And Koko chose: "
+					+ protocol.getPayload().getDesiredCoin());
+			
+		} catch (Exception e) {
+			System.out.println(e);
+			return false;
+		}
+		
+		return res;
 	}
 
 	/**
@@ -342,6 +381,8 @@ public class ProtocolImpl {
 			System.out
 					.println("Something went wrong and came out with this error:");
 			System.out.println(e);
+			protocol.setStatusId(100);
+			protocol.setStatusMessage(e.getStackTrace().toString());
 			return false;
 		}
 
@@ -437,7 +478,8 @@ public class ProtocolImpl {
 		LinkedList<String> ec = new LinkedList<String>();
 
 		try {
-			Cipher engine = Cipher.getInstance("SRA/NONE/OAEPWITHSHA512ANDMGF1PADDING",
+			Cipher engine = Cipher.getInstance(
+					"SRA/NONE/OAEPWITHSHA512ANDMGF1PADDING",
 					BouncyCastleProvider.PROVIDER_NAME);
 
 			// prepare the engine for encryption.
@@ -543,7 +585,8 @@ public class ProtocolImpl {
 
 		try {
 
-			Cipher engine = Cipher.getInstance("SRA/NONE/OAEPWITHSHA512ANDMGF1PADDING",
+			Cipher engine = Cipher.getInstance(
+					"SRA/NONE/OAEPWITHSHA512ANDMGF1PADDING",
 					BouncyCastleProvider.PROVIDER_NAME);
 			KeyFactory factory = KeyFactory.getInstance("SRA",
 					BouncyCastleProvider.PROVIDER_NAME);
@@ -663,7 +706,26 @@ public class ProtocolImpl {
 
 		return mapper.writer(filters).writeValueAsString(protocol);
 
-		//return mapper.writeValueAsString(protocol);
+		// return mapper.writeValueAsString(protocol);
+	}
+	
+	public String calcStateMessage(){
+		Set<String> dontFilter = new HashSet<String>();
+		dontFilter.add("protocolId");
+		dontFilter.add("statusId");
+		dontFilter.add("statusMessage");
+		FilterProvider filters = new SimpleFilterProvider().addFilter(
+				"myFilter",
+				SimpleBeanPropertyFilter.filterOutAllExcept(dontFilter));
+
+		ObjectWriter writer = mapper.writer(filters);
+
+		try {
+			return mapper.writer(filters).writeValueAsString(protocol);
+		} catch (JsonProcessingException e) {
+			e.getStackTrace().toString();
+			return "";
+		}
 	}
 
 	/**
@@ -680,7 +742,7 @@ public class ProtocolImpl {
 			newProtocol = (Protocol) mapper.readValue(json, Protocol.class);
 		} catch (Exception e) {
 			System.out.println("\n==================================");
-			System.out.println(json);
+			System.out.println("json: '" + json + "'");
 			System.out.println("==================================\n");
 			return Status.PROTOCOL_ERROR;
 		}

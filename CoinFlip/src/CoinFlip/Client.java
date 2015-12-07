@@ -19,20 +19,31 @@ public class Client {
 	private static void handleProtocol(ProtocolImpl protocolImpl,
 			Socket socket, BufferedReader in, PrintWriter out) throws Exception {
 		String json;
-		System.out.println(socket.isClosed() + ", " + socket.isConnected()
-				+ ", " + socket.isInputShutdown() + ", " + in.ready());
 
 		while (true) {
 			json = in.readLine();
-			if (json == "" || json == null) {
+			
+			System.out.println("incoming: '" + json + "'");
+			
+			if (json == null) {
 				break;
 			}
-
-			if (protocolImpl.statusAndRegister(json) == Status.PROTOCOL_OK) {
+			
+			if (json.equals("")) {
+				continue;
+			}
+			
+			Status status = protocolImpl.statusAndRegister(json); 
+			if (status == Status.PROTOCOL_OK) {
 				String res = protocolImpl.calcAndRespondToProtocolStep();
-				System.out.println(res);
+				System.out.println("outgoing: '" + res + "'");
 				out.println(res);
 			} else {
+				if (status == Status.PROTOCOL_ERROR) {
+					String trace = protocolImpl.calcStateMessage();
+					System.out.println("outgoing: '" + trace + "'");
+					out.println(trace);
+				}
 				break;
 			}
 		}
@@ -47,8 +58,8 @@ public class Client {
 
 	private static Socket createClientSocket() throws UnknownHostException,
 			IOException {
-		return new Socket("127.0.0.1", 4444);
-	    //return new Socket("54.77.97.90", 4444);
+		//return new Socket("127.0.0.1", 4444);
+	    return new Socket("54.77.97.90", 4444);
 		// return new Socket("192.168.2.187", 4444);
 		// return new Socket("192.168.2.152", 4444);
 	}
@@ -83,7 +94,7 @@ public class Client {
 
 			if (!isServer) {
 				String initial = protocolImpl.calcAndRespondToProtocolStep();
-				System.out.println(initial);
+				System.out.println("outgoing: '" + initial + "'");
 				out.println(initial);
 			}
 
