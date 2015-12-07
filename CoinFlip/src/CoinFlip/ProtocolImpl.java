@@ -235,7 +235,8 @@ public class ProtocolImpl {
 	}
 
 	private boolean validateNewPayloadForth(Protocol protocol) {
-		boolean res = !protocol.getPayload().getKeyB().get(0).equals(BigInteger.ZERO)
+		boolean res = !protocol.getPayload().getKeyB().get(0)
+				.equals(BigInteger.ZERO)
 				&& !protocol.getPayload().getKeyB().get(1)
 						.equals(BigInteger.ZERO);
 		try {
@@ -244,38 +245,46 @@ public class ProtocolImpl {
 					BouncyCastleProvider.PROVIDER_NAME);
 			KeyFactory factory = KeyFactory.getInstance("SRA",
 					BouncyCastleProvider.PROVIDER_NAME);
-	
+
 			BigInteger p = protocol.getKeyNegotiation().getP();
 			BigInteger q = protocol.getKeyNegotiation().getQ();
 			BigInteger n = p.multiply(q);
-			BigInteger e = protocol.getPayload().getKeyA().get(0);
-			BigInteger d = protocol.getPayload().getKeyA().get(1);
-	
+			BigInteger e = protocol.getPayload().getKeyB().get(0);
+			BigInteger d = protocol.getPayload().getKeyB().get(1);
+
 			PrivateKey privateKey = factory
 					.generatePrivate(new SRADecryptionKeySpec(p, q, d, e));
 			PublicKey publicKey = factory
 					.generatePublic(new SRAEncryptionKeySpec(n, e));
-	
+
 			KeyPair newKeyPair = new KeyPair(publicKey, privateKey);
-			
+
 			// prepare for decryption
 			engine.init(Cipher.DECRYPT_MODE, newKeyPair.getPrivate());
 			// decrypt the cipher.
 			byte[] recover = engine.doFinal(DatatypeConverter
 					.parseHexBinary(protocol.getPayload().getDeChosenCoin()));
-
 			String result = Hex.toHexString(recover);
 
 			System.out.println("Coin flip was:" + convertHexToString(result));
+			String winningState = "lost";
 
+			if (!protocol.getPayload().getDesiredCoin()
+					.equals(convertHexToString(result))) {
+				winningState = "won";
+			}
 			System.out.println("And Koko chose: "
 					+ protocol.getPayload().getDesiredCoin());
-			
+
+			System.out.println("That means, that I " + winningState
+					+ "!!!!!!!!!!!!11elf");
+
 		} catch (Exception e) {
+			System.out.println("Oh no, people are so mean");
 			System.out.println(e);
 			return false;
 		}
-		
+
 		return res;
 	}
 
@@ -290,7 +299,7 @@ public class ProtocolImpl {
 	}
 
 	private void probablyFunnyMessage(Protocol protocol) {
-		if (protocol.getStatusMessage() != "OK") {
+		if (false && protocol.getStatusMessage() != "OK") {
 			System.out.println("The other guy says: "
 					+ protocol.getStatusMessage() + ".");
 		}
@@ -679,7 +688,7 @@ public class ProtocolImpl {
 			addGeneralData();
 			addProtocolNegotiationDataFirst();
 		}
-		System.out.println("Step " + protocolStep + " finished.");
+		//System.out.println("Step " + protocolStep + " finished.");
 
 		switch (protocolStep) {
 		case 7:
@@ -708,8 +717,8 @@ public class ProtocolImpl {
 
 		// return mapper.writeValueAsString(protocol);
 	}
-	
-	public String calcStateMessage(){
+
+	public String calcStateMessage() {
 		Set<String> dontFilter = new HashSet<String>();
 		dontFilter.add("protocolId");
 		dontFilter.add("statusId");

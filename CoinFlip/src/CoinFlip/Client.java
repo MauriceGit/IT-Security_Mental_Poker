@@ -23,7 +23,7 @@ public class Client {
 		while (true) {
 			json = in.readLine();
 			
-			System.out.println("incoming: '" + json + "'");
+			//System.out.println("incoming: '" + json + "'");
 			
 			if (json == null) {
 				break;
@@ -36,7 +36,7 @@ public class Client {
 			Status status = protocolImpl.statusAndRegister(json); 
 			if (status == Status.PROTOCOL_OK) {
 				String res = protocolImpl.calcAndRespondToProtocolStep();
-				System.out.println("outgoing: '" + res + "'");
+				//System.out.println("outgoing: '" + res + "'");
 				out.println(res);
 			} else {
 				if (status == Status.PROTOCOL_ERROR) {
@@ -94,7 +94,7 @@ public class Client {
 
 			if (!isServer) {
 				String initial = protocolImpl.calcAndRespondToProtocolStep();
-				System.out.println("outgoing: '" + initial + "'");
+				//System.out.println("outgoing: '" + initial + "'");
 				out.println(initial);
 			}
 
