@@ -114,7 +114,7 @@ public class Client {
 		ProtocolImpl protocolImpl = new ProtocolImpl();
 
 		boolean useTLS = true;
-		;
+		
 
 		if (useTLS) {
 			BigInteger serialNumberStartsAt = new BigInteger("5");
