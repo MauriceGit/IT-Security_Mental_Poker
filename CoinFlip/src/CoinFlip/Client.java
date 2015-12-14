@@ -8,7 +8,6 @@ import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.LinkedList;
 import java.util.List;
 
 public class Client {
@@ -17,27 +16,27 @@ public class Client {
 			TLSNetwork network) throws Exception {
 
 		String json;
+		int listEntries = 0;
 
 		while (true) {
 
 			List<String> tmpList = network.getAllMessages();
 
-			if (tmpList.size() == 0) {
+			// Dem Thread eine Chance geben, die Liste aufzufüllen.
+			if (tmpList.size() <= listEntries) {
 				Thread.sleep(10);
 				continue;
 			}
 
-			// Geht, weil Strings immutable sind in Java.
-			json = network.getAllMessages().get(0);
-			tmpList.remove(0);
-			tmpList = new LinkedList<String>();
+			json = network.getAllMessages().get(listEntries);
+			listEntries++;
 
 			if (json == null) {
 				break;
 			}
 
 			if (json.equals("")) {
-				continue;
+				break;
 			}
 
 			Status status = protocolImpl.statusAndRegister(json);
@@ -53,6 +52,8 @@ public class Client {
 				break;
 			}
 		}
+		// Dem Server mitteilen, dass er auch aufhören kann!
+		network.send("");
 		network.stop();
 	}
 
