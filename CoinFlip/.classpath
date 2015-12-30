@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="bc-java-master/pkix/src/main/java"/>
 	<classpathentry kind="src" path="bc-java-master/core/src/main/java"/>
 	<classpathentry kind="src" path="bc-java-master/prov/src/main/java"/>
 	<classpathentry kind="src" path="bc-java-master/core/src/test/java"/>
