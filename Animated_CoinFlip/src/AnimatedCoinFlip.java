@@ -4,14 +4,24 @@ public class AnimatedCoinFlip {
     
     public static void main(String[] args) {
         
-        CoinFlipThread coinFlip = new CoinFlipThread(false, true);
+    	boolean isServer = false;
+    	boolean useTLS = true;
+    	
+        if (args.length != 0 && args[0].matches("^START$")) {
+            isServer = true;
+        }
+    	
+        CoinFlipThread coinFlip = new CoinFlipThread(isServer, useTLS);
         AnimationThread animation = new AnimationThread();
         
         Thread coinFlipThread = new Thread(coinFlip);
         Thread animationThread = new Thread(animation);
         
         coinFlipThread.start();
-        animationThread.start();
+        
+        if (!isServer) {
+        	animationThread.start();
+        }
         
         try {
             coinFlipThread.join();

@@ -218,15 +218,15 @@ public class Client {
     }
 
     
-//    public void main(String[] args) {
-//        
-//        boolean isServer = false;
-//        if (args.length != 0 && args[0].matches("^START$")) {
-//            isServer = true;
-//        }
-//            
-//        playCoinFlip(isServer, true);
-//
-//    }
-//    
+    public void main(String[] args) {
+        
+        boolean isServer = false;
+        if (args.length != 0 && args[0].matches("^START$")) {
+            isServer = true;
+        }
+            
+        playCoinFlip(isServer, true);
+
+    }
+    
 }

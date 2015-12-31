@@ -9,6 +9,8 @@ public class CoinFlipThread implements Runnable {
     
     public CoinFlipThread(boolean isServer, boolean useTLS) {
         this.coinFlip = new Client();
+        this.isServer = isServer;
+        this.useTLS = useTLS;
     }
 
     @Override

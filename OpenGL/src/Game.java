@@ -48,30 +48,7 @@ public class Game extends JFrame implements GLEventListener {
     }
 
     public Game() {
-        super("Minimal OpenGL - yay");
-        GLProfile profile = GLProfile.get(GLProfile.GL2);
-        GLCapabilities capabilities = new GLCapabilities(profile);
-        GLCanvas canvas = new GLCanvas(capabilities);
-        canvas.addGLEventListener(this);
-        final Animator animator = new Animator(canvas);
-
-        this.setName("Minimal OpenGL - yay");
-        this.getContentPane().add(canvas);
-
-        coin = new Coin();
-        camera = new Camera();
-        iWon = true;
-        texturesChangedOrGood = false;
-        switchTextures = false;
-
-        this.setSize(width, height);
-        this.setLocationRelativeTo(null);
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setVisible(true);
-        this.setResizable(false);
-        canvas.requestFocusInWindow();
-        animator.start();
-
+    	super("Minimal OpenGL - yay");
     }
 
     private void drawCoin(GL2 gl) {
@@ -268,6 +245,28 @@ public class Game extends JFrame implements GLEventListener {
     }
 
     public void play() {
+    	
+        GLProfile profile = GLProfile.get(GLProfile.GL2);
+        GLCapabilities capabilities = new GLCapabilities(profile);
+        GLCanvas canvas = new GLCanvas(capabilities);
+        canvas.addGLEventListener(this);
+        final Animator animator = new Animator(canvas);
 
+        this.setName("Minimal OpenGL - yay");
+        this.getContentPane().add(canvas);
+
+        coin = new Coin();
+        camera = new Camera();
+        iWon = true;
+        texturesChangedOrGood = false;
+        switchTextures = false;
+
+        this.setSize(width, height);
+        this.setLocationRelativeTo(null);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setVisible(true);
+        this.setResizable(false);
+        canvas.requestFocusInWindow();
+        animator.start();
     }
 }

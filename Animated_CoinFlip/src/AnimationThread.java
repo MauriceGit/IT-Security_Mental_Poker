@@ -1,14 +1,15 @@
 
 public class AnimationThread implements Runnable {
     
-    private Game game;
+    private Game game = null;
     
     public AnimationThread() {
-        this.game = new Game();
+    	this.game = new Game();
     }
 
     @Override
     public void run() {
+    	
         this.game.play();
     }
 
