@@ -1,8 +1,8 @@
 
 
-public class coinFlipAnimation {
+public class CoinFlipAnimation {
 
-    public coinFlipAnimation() {
+    public CoinFlipAnimation() {
         // TODO Auto-generated constructor stub
     }
 

@@ -32,12 +32,20 @@ public class Game extends JFrame implements GLEventListener {
     private Camera camera;
 
     private boolean iWon;
+    private boolean coinFlipIsFinished;
     private boolean texturesChangedOrGood;
     private boolean switchTextures;
 
     private TextRenderer textRenderer;
 
-    private DecimalFormat formatter = new DecimalFormat("###0.00");
+
+    public void setiWon(boolean iWon) {
+        this.iWon = iWon;
+    }
+
+    public void setCoinFlipIsFinished(boolean coinFlipIsFinished) {
+        this.coinFlipIsFinished = coinFlipIsFinished;
+    }
 
     public Game() {
         super("Minimal OpenGL - yay");
@@ -52,7 +60,7 @@ public class Game extends JFrame implements GLEventListener {
 
         coin = new Coin();
         camera = new Camera();
-        iWon = false;
+        iWon = true;
         texturesChangedOrGood = false;
         switchTextures = false;
 
