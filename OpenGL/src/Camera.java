@@ -18,7 +18,7 @@ public class Camera {
     }
     
     public void animate(Coin coin, float interval) {
-        if (coin.isCoinAnimationFinished() && !finishedRotating) {
+        if (coin.isCoinAnimationFinished()) {
             startRotating = true;
             float xDiff = tX-x;
             float yDiff = tY-y;

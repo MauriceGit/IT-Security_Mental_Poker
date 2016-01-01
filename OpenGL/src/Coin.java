@@ -22,12 +22,12 @@ public class Coin {
         this.y = 0;
         this.z = 0;
         this.angle = 0;
-        this.a = calcA();
-        this.v = 15.0f;
+        this.a = calcA();        
         this.y = 0;
         bounced = 0;
         bounceHeight = 15;
-        rotationSpeed = 12;
+        this.v = bounceHeight;
+        rotationSpeed = 25;
         calmDown = false;
         coinAnimationFinished = false;
     }
@@ -47,17 +47,22 @@ public class Coin {
         return p + v * interval;
     }
     
-    private boolean isNearlyFlat () {
-        return Math.abs(180-(angle%180)) <= 2;
+    private boolean isNearlyFlat (boolean won) {
+        if (won) {
+            //return Math.abs(180-(angle%180)) <= 2;
+            return Math.abs(360-(angle)) <= 2 || angle <= 2;
+        } else {
+            return Math.abs(180-(angle)) <= 2;
+        }
     }
         
-    public void animate(float interval) {
+    public void animate(float interval, boolean coinFlipFinished, boolean won) {
         angle = (angle + (interval * rotationSpeed)) % 360;
                 
         a = calcA();
         v = calcV(interval / 2.0f);
         
-        if (!calmDown && bounced >= 3 && isNearlyFlat()) {
+        if (!calmDown && bounced >= 3 && coinFlipFinished && isNearlyFlat(won)) {
             calmDown = true;
             rotationSpeed -= rotationSpeed;
         }
@@ -74,8 +79,11 @@ public class Coin {
         if (y < 0) {
             y = 0;
             v = bounceHeight;
-            bounceHeight /= 1.2f;
-            rotationSpeed /= 1.2f;            
+            if (bounced < 3) {
+                bounceHeight /= 1.2f;
+                rotationSpeed /= 1.2f;
+            }
+                        
             bounced++;
             
             if (calmDown && rotationSpeed < 0.1) {

@@ -1,7 +1,6 @@
 import java.awt.Color;
 import java.awt.Font;
 import java.io.File;
-import java.text.DecimalFormat;
 
 import javax.swing.JFrame;
 
@@ -30,21 +29,25 @@ public class Game extends JFrame implements GLEventListener {
     private long lastTime;
     private Coin coin;
     private Camera camera;
+    
+    private float rotation = 0.0f;
+    private float descent = 1.0f;
 
-    private boolean iWon;
-    private boolean coinFlipIsFinished;
+    private MutableBool winningState = new MutableBool(true);
+    
+    private MutableBool coinFlipIsFinished = new MutableBool(false);
     private boolean texturesChangedOrGood;
     private boolean switchTextures;
 
     private TextRenderer textRenderer;
 
 
-    public void setiWon(boolean iWon) {
-        this.iWon = iWon;
+    public synchronized void setiWon(boolean iWon) {
+        winningState.setMutableBool(iWon);
     }
 
     public void setCoinFlipIsFinished(boolean coinFlipIsFinished) {
-        this.coinFlipIsFinished = coinFlipIsFinished;
+        this.coinFlipIsFinished.setMutableBool(coinFlipIsFinished);
     }
 
     public Game() {
@@ -123,6 +126,7 @@ public class Game extends JFrame implements GLEventListener {
         gl.glTranslatef(coin.getX(), coin.getY(), coin.getZ());
         // gl.glRotatef(coin.getAngle(), 1.0f, 0.0f, 3.4f);
         gl.glRotatef(coin.getAngle(), 0.0f, 0.0f, 1.0f);
+        gl.glRotatef(rotation%360, 0, 1, 0);
         gl.glRotatef(90f, 1, 0, 0);
         drawCoin(gl);
         gl.glPopMatrix();
@@ -130,7 +134,7 @@ public class Game extends JFrame implements GLEventListener {
 
     private void drawText(GL2 gl) {
         if (coin.isCoinAnimationFinished() && camera.isFinishedRotating()) {
-            String text = iWon ? "You Won. Congrats."
+            String text = winningState.getMutableBool() ? "You Won. Congrats."
                     : "You Lost. Better run now...";
 
             textRenderer.beginRendering(400, 400);
@@ -149,22 +153,24 @@ public class Game extends JFrame implements GLEventListener {
         long thisTime = System.currentTimeMillis();
         float interval = (thisTime - lastTime) / 60.0f;
         lastTime = thisTime;
+        
+        
+        
+        if (coin.isCoinAnimationFinished()) {
+            rotation += interval*4.5 / descent;
+            descent += interval / 4.0f;
+        } else {
+            rotation += interval*4.5f;
+        }
 
         setLight(gl);
         setCamera(gl, distance);
 
-        coin.animate(interval);
-
-        if (!texturesChangedOrGood && coin.isCoinAnimationFinished()
-                && !camera.isStartRotating()) {
-            // angle müsste dann bei ~180 sein. Dann müssen Texturen gedreht
-            // werden.
-            if (iWon && coin.getAngle() > 50 && coin.getAngle() < 300) {
-                switchTextures = true;
-            }
-            texturesChangedOrGood = true;
+        coin.animate(interval, coinFlipIsFinished.getMutableBool(), winningState.getMutableBool());
+  
+        if (coinFlipIsFinished.getMutableBool()) {
+            camera.animate(coin, interval);
         }
-        camera.animate(coin, interval);
 
         drawAnimatedCoin(gl, interval);
 
@@ -219,7 +225,7 @@ public class Game extends JFrame implements GLEventListener {
         glu = new GLU();
         distance = (float) 30.0;
         File head = new File("panda.jpg");
-        File tail = new File("tails.jpg");
+        File tail = new File("game_over.png");
         if (textureUp == null && head != null) {
             try {
                 textureUp = TextureIO.newTexture(head, true);
@@ -257,7 +263,6 @@ public class Game extends JFrame implements GLEventListener {
 
         coin = new Coin();
         camera = new Camera();
-        iWon = true;
         texturesChangedOrGood = false;
         switchTextures = false;
 

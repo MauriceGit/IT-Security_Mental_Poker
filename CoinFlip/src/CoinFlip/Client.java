@@ -24,7 +24,7 @@ public class Client {
 		while (true) {
 
 			List<String> tmpList = network.getAllMessages();
-
+			
 			// Dem Thread eine Chance geben, die Liste aufzufüllen.
 			if (tmpList.size() <= listEntries) {
 				Thread.sleep(10);
@@ -42,9 +42,11 @@ public class Client {
 				break;
 			}
 
+			System.out.println("json:" + json);
 			Status status = protocolImpl.statusAndRegister(json);
 			if (status == Status.PROTOCOL_OK) {
 				String res = protocolImpl.calcAndRespondToProtocolStep();
+				System.out.println(res);
 				network.send(res);
 			} else {
 				if (status == Status.PROTOCOL_ERROR) {
@@ -109,8 +111,8 @@ public class Client {
 
 	private Socket createClientSocket() throws UnknownHostException,
 			IOException {
-		//return new Socket("127.0.0.1", 4444);
-		return new Socket("54.77.97.90", 4444);
+		return new Socket("127.0.0.1", 4444);
+		//return new Socket("54.77.97.90", 4444);
 		// return new Socket("192.168.2.187", 4444);
 		// return new Socket("192.168.2.152", 4444);
 	}
@@ -192,6 +194,7 @@ public class Client {
                 if (!useTLS) {
                     out.println(initial);
                 } else {
+                    System.out.println("initial: " + initial);
                     networkC.send(initial);
                 }
 
@@ -206,7 +209,9 @@ public class Client {
         } catch (Exception e) {
             System.out.println("Some serious shit is going on ...");
             System.out.println(e);
+            isFinished = true;
         }
+        isFinished = true;
 	}
 
     public boolean isFinished() {
@@ -224,7 +229,9 @@ public class Client {
         if (args.length != 0 && args[0].matches("^START$")) {
             isServer = true;
         }
-            
+        
+        System.out.println("Blubb");
+        
         playCoinFlip(isServer, true);
 
     }
