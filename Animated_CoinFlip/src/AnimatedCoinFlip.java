@@ -32,6 +32,7 @@ public class AnimatedCoinFlip {
         System.out.println("Coin-Flip has finished...");
         
         animation.setWinningState(coinFlip.isWon());
+        animation.setWinningState(false);
         animation.setFinishedState(coinFlip.isFinished());
 
     }
