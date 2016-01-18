@@ -43,7 +43,8 @@ public class Client {
 			if (json.equals("")) {
 				break;
 			}
-
+			
+			//System.out.println(json);
 			Status status = protocolImpl.statusAndRegister(json);
 			if (status == Status.PROTOCOL_OK) {
 				String res = protocolImpl.calcAndRespondToProtocolStep();
@@ -172,8 +173,9 @@ public class Client {
                             "client", "fhwedel",
                             OwnTrustManager.NEVER, null, true);
                     System.out.println("started.");
+                    networkC.connect("fluffels.de", 50000,
                     //networkC.connect("54.77.97.90", 4444,
-                    networkC.connect("127.0.0.1", 4444,
+                    //networkC.connect("127.0.0.1", 4444,fluffels.de:50000
                             "root", "fhwedel",
                             "client", "fhwedel",
                             OwnTrustManager.NEVER, null, true);

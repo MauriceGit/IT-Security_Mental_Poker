@@ -55,7 +55,7 @@ public class TLSClient {
 
 			tlsSocket.addHandshakeCompletedListener(new HandshakeCompletedListener() {
 				public void handshakeCompleted(HandshakeCompletedEvent e) {
-					System.out.println("SSL handshake completed (client): ");
+					System.out.println("SSL handshake completed (client): " + host + ":"+port);
 					// showHandshakeInfo(e);
 				}
 			});
