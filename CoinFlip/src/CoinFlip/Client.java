@@ -11,7 +11,6 @@ import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -127,15 +126,16 @@ public class Client {
 
         try {
             final PingingService service2 = new HttpPingingService(
-                    "https://52.35.76.130:8443/broker/1.0/players", "", "", "root", "fhwedel");
-            Map<String, String> map = service2.getPlayersDirectlyOverHttpGetRequest(); 
-            Map.Entry<String,String> entry=map.entrySet().iterator().next();
-            String key= entry.getKey();
-            String value=entry.getValue();
-            
+                    "https://52.35.76.130:8443/broker/1.0/players", "", "",
+                    "root", "fhwedel");
+            Map<String, String> map = service2
+                    .getPlayersDirectlyOverHttpGetRequest();
+            Map.Entry<String, String> entry = map.entrySet().iterator().next();
+            String key = entry.getKey();
+            String value = entry.getValue();
+
             return value;
-            
-            
+
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -188,25 +188,21 @@ public class Client {
                 if (useTLS) {
 
                     String someServer = getSomeServer();
-                    
+
                     String host = someServer.split(":")[0];
                     Integer port = Integer.parseInt(someServer.split(":")[1]);
-                    
+
                     System.out.println("host = " + host);
                     System.out.println("port = " + port);
 
                     networkC = new TLSNetwork(TLSNetwork.CLIENT);
                     networkC.start(4444, "root", "fhwedel", "client",
                             "fhwedel", OwnTrustManager.NEVER, null, true);
-                    System.out.println("started.");
-                    networkC.connect(
-                            "fluffels.de",
-                            50000,
-                            // networkC.connect("54.77.97.90", 4444,
-                            // networkC.connect("127.0.0.1", 4444,
-                            // networkC.connect(host, port,
-                            "root", "fhwedel", "client", "fhwedel",
-                            OwnTrustManager.NEVER, null, true);
+                    // networkC.connect("fluffels.de",50000,
+                    // networkC.connect("54.77.97.90", 4444,
+                    // networkC.connect("127.0.0.1", 4444,
+                    networkC.connect(host, port, "root", "fhwedel", "client",
+                            "fhwedel", OwnTrustManager.NEVER, null, true);
                 } else {
                     socket = createClientSocket();
                 }
