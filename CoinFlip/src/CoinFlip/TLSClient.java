@@ -55,7 +55,7 @@ public class TLSClient {
 
 			tlsSocket.addHandshakeCompletedListener(new HandshakeCompletedListener() {
 				public void handshakeCompleted(HandshakeCompletedEvent e) {
-					// System.out.println("SSL handshake completed (client): ");
+					System.out.println("SSL handshake completed (client): ");
 					// showHandshakeInfo(e);
 				}
 			});
@@ -72,8 +72,10 @@ public class TLSClient {
 			waitingForCommunication.start();
 
 		} catch (IOException e) {
-			// this.log("Error: Unable to connect (IOException)");
+			System.out.println("sdflkjdsfgdsgjhdsaghjsgdasgdakgdsajjhjk");
 		}
+		System.out.println(isConnected());
+		
 	}
 
 	/**

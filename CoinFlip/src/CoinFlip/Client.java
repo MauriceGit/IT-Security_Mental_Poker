@@ -20,14 +20,16 @@ public class Client {
 
 		String json;
 		int listEntries = 0;
-
+		
+		
 		while (true) {
 
 			List<String> tmpList = network.getAllMessages();
 			
+			
 			// Dem Thread eine Chance geben, die Liste aufzufüllen.
 			if (tmpList.size() <= listEntries) {
-				Thread.sleep(10);
+				Thread.sleep(100);
 				continue;
 			}
 
@@ -42,16 +44,15 @@ public class Client {
 				break;
 			}
 
-			System.out.println("json:" + json);
 			Status status = protocolImpl.statusAndRegister(json);
 			if (status == Status.PROTOCOL_OK) {
 				String res = protocolImpl.calcAndRespondToProtocolStep();
-				System.out.println(res);
+				//System.out.println(res);
 				network.send(res);
 			} else {
 				if (status == Status.PROTOCOL_ERROR) {
 					String trace = protocolImpl.calcStateMessage();
-					System.out.println("outgoing: '" + trace + "'");
+					//System.out.println("outgoing: '" + trace + "'");
 					network.send(trace);
 				}
 				break;
@@ -74,6 +75,8 @@ public class Client {
 	private void handleProtocolSocket(ProtocolImpl protocolImpl,
 			Socket socket, BufferedReader in, PrintWriter out) throws Exception {
 		String json;
+		
+		
 
 		while (true) {
 			json = in.readLine();
@@ -111,8 +114,8 @@ public class Client {
 
 	private Socket createClientSocket() throws UnknownHostException,
 			IOException {
-		return new Socket("127.0.0.1", 4444);
-		//return new Socket("54.77.97.90", 4444);
+		//return new Socket("127.0.0.1", 4444);
+		return new Socket("54.77.97.90", 4444);
 		// return new Socket("192.168.2.187", 4444);
 		// return new Socket("192.168.2.152", 4444);
 	}
@@ -125,15 +128,10 @@ public class Client {
             // X509CertGenerator gen = new
             // X509CertGenerator(serialNumberStartsAt);
             try {
-                // gen.createRoot(
-                // new X500Name(
-                // "C=GERMANY,L=Wedel,O=FH Wedel, OU=ITS Project WS1516, CN=Mental Poker Root"),
-                // 2048, "mentalpoker_root", "password", "test42root", true);
-
                 X509CertGenerator gen = new X509CertGenerator(
                         serialNumberStartsAt);
-                gen.loadRoot("mentalpoker_root.private", "password",
-                        "test42root");
+                gen.loadRoot("root", "fhwedel",
+                        "root");
 
             } catch (Exception e1) {
                 // TODO Auto-generated catch block
@@ -159,8 +157,8 @@ public class Client {
             if (isServer) {
                 if (useTLS) {
                     networkS = new TLSNetwork(TLSNetwork.SERVER);
-                    networkS.start(4444, "mentalpoker_root.public", "password",
-                            "mentalpoker_maurice.private", "password",
+                    networkS.start(4444, "root", "fhwedel",
+                            "server", "fhwedel",
                             OwnTrustManager.NEVER, null, true);
                 } else {
                     socket = createServerSocket();
@@ -169,13 +167,14 @@ public class Client {
             } else {
                 if (useTLS) {
                     networkC = new TLSNetwork(TLSNetwork.CLIENT);
-                    networkC.start(4444, "mentalpoker_root.public", "password",
-                            "mentalpoker_maurice.private", "password",
+                    networkC.start(4444, "root", "fhwedel",
+                            "client", "fhwedel",
                             OwnTrustManager.NEVER, null, true);
                     System.out.println("started.");
+                    //networkC.connect("54.77.97.90", 4444,
                     networkC.connect("127.0.0.1", 4444,
-                            "mentalpoker_root.public", "password",
-                            "mentalpoker_maurice.private", "password",
+                            "root", "fhwedel",
+                            "client", "fhwedel",
                             OwnTrustManager.NEVER, null, true);
                 } else {
                     socket = createClientSocket();
@@ -229,8 +228,6 @@ public class Client {
         if (args.length != 0 && args[0].matches("^START$")) {
             isServer = true;
         }
-        
-        System.out.println("Blubb");
         
         playCoinFlip(isServer, true);
 
