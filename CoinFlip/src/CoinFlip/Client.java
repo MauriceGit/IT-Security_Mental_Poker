@@ -63,6 +63,7 @@ public class Client {
 		network.stop();
 		
 		isFinished = true;
+		//System.out.println("is it won??? " + protocolImpl.isiWon());
 		isWon = protocolImpl.isiWon();
 	}
 
