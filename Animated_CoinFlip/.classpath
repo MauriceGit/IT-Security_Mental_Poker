@@ -4,5 +4,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CoinFlip"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/CoinFlip_OpenGL"/>
+	<classpathentry kind="lib" path="/home/maurice/Uni/Master/IT-Security_Mental_Poker/Animated_CoinFlip/pinger-1.3-SNAPSHOT-jar-with-dependencies.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
