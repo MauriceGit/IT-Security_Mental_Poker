@@ -17,6 +17,7 @@ To run this animation and the coin-flip protocol, run:
 
 
 **System Requirements:**
+
 Some packages and programs need to be installed on the system, to get the animation to run:
 
 - OpenJDK, Java version 8
