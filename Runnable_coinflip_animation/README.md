@@ -13,8 +13,8 @@ Have fun trying it out and playing around :)
 
 These are some sceenshots of how the coin flip animation looks in action:
 
-->![flipping](https://github.com/MauriceGit/IT-Security_Mental_Poker/blob/master/Runnable_coinflip_animation/Screenshots/flipping_01.png "coin flipping")<-
-->![flipping](https://github.com/MauriceGit/IT-Security_Mental_Poker/blob/master/Runnable_coinflip_animation/Screenshots/flipping_03.png "coin flipping")<-
+![flipping](https://github.com/MauriceGit/IT-Security_Mental_Poker/blob/master/Runnable_coinflip_animation/Screenshots/flipping_01.png "coin flipping")
+![flipping](https://github.com/MauriceGit/IT-Security_Mental_Poker/blob/master/Runnable_coinflip_animation/Screenshots/flipping_03.png "coin flipping")
 ![won game](https://github.com/MauriceGit/IT-Security_Mental_Poker/blob/master/Runnable_coinflip_animation/Screenshots/won.png "game is won")
 ![lost game](https://github.com/MauriceGit/IT-Security_Mental_Poker/blob/master/Runnable_coinflip_animation/Screenshots/lost.png "game is lost")
 
