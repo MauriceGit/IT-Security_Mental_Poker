@@ -1,6 +1,5 @@
 
-
-**Running the Coin Flip Animation:**
+*Coin Flip Protocol with OpenGL Animation:*
 
 This folder contains all necessary jar files and resources to run the OpenGL-supported coin flip animation.
 The animation is tested for 64bit unix systems (amd64). This implementation is merely seen as a proof-of-concept
@@ -11,11 +10,6 @@ As of right now there is no way to actively chose a different server.
 
 It can be run as a server, when called with SERVER as first parameter.
 
-To run this animation and the coin-flip protocol, run:
-
-./run_coinflip_client.sh [SERVER]
-
-
 **System Requirements:**
 
 Some packages and programs need to be installed on the system, to get the animation to run:
@@ -23,4 +17,21 @@ Some packages and programs need to be installed on the system, to get the animat
 - OpenJDK, Java version 8
 - xorg-dev
 - mesa-common-dev
+
+**Config File:**
+
+There is a config file in the same folder as the jars and the executable program, called:
+*coinflip_config.conf*. This config contains some possible adjustments that can be made to
+the execution of the coin flip.
+
+- isServer: A boolean value to determine, if the coinflip is started as a local server or a client.
+- dfdsf
+- ddf
+
+
+**Running:**
+
+To run this animation and the coin-flip protocol, simply call:
+
+./run_coinflip_client.sh
 
