@@ -117,20 +117,17 @@ public class Client {
         return server.accept();
     }
 
-    private Socket createClientSocket() throws UnknownHostException,
+    private Socket createClientSocket(String serverIP, Integer serverPort) throws UnknownHostException,
             IOException {
-        // return new Socket("127.0.0.1", 4444);
-        return new Socket("54.77.97.90", 4444);
-        // return new Socket("192.168.2.187", 4444);
-        // return new Socket("192.168.2.152", 4444);
+        return new Socket(serverIP, serverPort);
     }
 
-    private String getSomeServer() {
+    private String getSomeServer(String brokerPath, String certName,
+            String certPw) {
 
         try {
-            final PingingService service2 = new HttpPingingService(
-                    "https://52.35.76.130:8443/broker/1.0/players", "", "",
-                    "root", "fhwedel");
+            final PingingService service2 = new HttpPingingService(brokerPath,
+                    "", "", certName, certPw);
             Map<String, String> map = service2
                     .getPlayersDirectlyOverHttpGetRequest();
             Map.Entry<String, String> entry = map.entrySet().iterator().next();
@@ -152,6 +149,7 @@ public class Client {
         boolean isServer = false;
         boolean useTLS = true;
         boolean useBroker = true;
+        String brokerURL = "";
         String serverIP = "";
         Integer serverPort = 0;
         String rootCertificateFile = "";
@@ -175,6 +173,7 @@ public class Client {
             isServer = Boolean.parseBoolean(prop.getProperty("isServer"));
             useTLS = Boolean.parseBoolean(prop.getProperty("useTLS"));
             useBroker = Boolean.parseBoolean(prop.getProperty("useBroker"));
+            brokerURL = prop.getProperty("brokerURL");
             serverIP = prop.getProperty("serverIP");
             serverPort = Integer.parseInt(prop.getProperty("serverPort"));
             rootCertificateFile = prop.getProperty("rootCertificateFile");
@@ -189,7 +188,8 @@ public class Client {
             serialNumberStartsAtIn = prop.getProperty("serialNumberStartsAt");
 
         } catch (IOException ex) {
-            System.out.println("There went something wrong when reading the config file:");
+            System.out
+                    .println("There went something wrong when reading the config file:");
             System.out.println(ex);
         } finally {
             if (input != null) {
@@ -243,7 +243,7 @@ public class Client {
             } else {
                 if (useTLS) {
                     if (useBroker) {
-                        String someServer = getSomeServer();
+                        String someServer = getSomeServer(brokerURL, rootCertificateFile, rootCertificatePw);
                         serverIP = someServer.split(":")[0];
                         serverPort = Integer.parseInt(someServer.split(":")[1]);
                     }
@@ -258,7 +258,7 @@ public class Client {
                             clientCertificateAlias, clientCertificatePw,
                             OwnTrustManager.NEVER, null, true);
                 } else {
-                    socket = createClientSocket();
+                    socket = createClientSocket(serverIP, serverPort);
                 }
             }
 
