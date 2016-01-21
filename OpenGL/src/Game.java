@@ -1,6 +1,10 @@
 import java.awt.Color;
 import java.awt.Font;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 import javax.swing.JFrame;
 
@@ -29,18 +33,22 @@ public class Game extends JFrame implements GLEventListener {
     private long lastTime;
     private Coin coin;
     private Camera camera;
-    
+
     private float rotation = 0.0f;
     private float descent = 1.0f;
 
     private MutableBool winningState = new MutableBool(true);
-    
+
     private MutableBool coinFlipIsFinished = new MutableBool(false);
     private boolean texturesChangedOrGood;
     private boolean switchTextures;
 
     private TextRenderer textRenderer;
 
+    private String headFile = "";
+    private String tailFile = "";
+    private String winMessage = "";
+    private String loseMessage = "";
 
     public synchronized void setiWon(boolean iWon) {
         winningState.setMutableBool(iWon);
@@ -51,7 +59,7 @@ public class Game extends JFrame implements GLEventListener {
     }
 
     public Game() {
-    	super("Minimal OpenGL - yay");
+        super("Minimal OpenGL - yay");
     }
 
     private void drawCoin(GL2 gl) {
@@ -126,7 +134,7 @@ public class Game extends JFrame implements GLEventListener {
         gl.glTranslatef(coin.getX(), coin.getY(), coin.getZ());
         // gl.glRotatef(coin.getAngle(), 1.0f, 0.0f, 3.4f);
         gl.glRotatef(coin.getAngle(), 0.0f, 0.0f, 1.0f);
-        gl.glRotatef(rotation%360, 0, 1, 0);
+        gl.glRotatef(rotation % 360, 0, 1, 0);
         gl.glRotatef(90f, 1, 0, 0);
         drawCoin(gl);
         gl.glPopMatrix();
@@ -134,8 +142,8 @@ public class Game extends JFrame implements GLEventListener {
 
     private void drawText(GL2 gl) {
         if (coin.isCoinAnimationFinished() && camera.isFinishedRotating()) {
-            String text = winningState.getMutableBool() ? "You Won. Congrats."
-                    : "You Lost. Better run now...";
+            String text = winningState.getMutableBool() ? winMessage
+                    : loseMessage;
 
             textRenderer.beginRendering(400, 400);
             textRenderer.setColor(Color.orange);
@@ -153,21 +161,20 @@ public class Game extends JFrame implements GLEventListener {
         long thisTime = System.currentTimeMillis();
         float interval = (thisTime - lastTime) / 60.0f;
         lastTime = thisTime;
-        
-        
-        
+
         if (coin.isCoinAnimationFinished()) {
-            rotation += interval*4.5 / descent;
+            rotation += interval * 4.5 / descent;
             descent += interval / 4.0f;
         } else {
-            rotation += interval*4.5f;
+            rotation += interval * 4.5f;
         }
 
         setLight(gl);
         setCamera(gl, distance);
 
-        coin.animate(interval, coinFlipIsFinished.getMutableBool(), winningState.getMutableBool());
-  
+        coin.animate(interval, coinFlipIsFinished.getMutableBool(),
+                winningState.getMutableBool());
+
         if (coinFlipIsFinished.getMutableBool()) {
             camera.animate(coin, interval);
         }
@@ -224,8 +231,8 @@ public class Game extends JFrame implements GLEventListener {
         gl.glClearColor(0f, 0f, 0f, 1f);
         glu = new GLU();
         distance = (float) 30.0;
-        File head = new File("panda.jpg");
-        File tail = new File("game_over.png");
+        File head = new File(headFile);
+        File tail = new File(tailFile);
         if (textureUp == null && head != null) {
             try {
                 textureUp = TextureIO.newTexture(head, true);
@@ -251,7 +258,35 @@ public class Game extends JFrame implements GLEventListener {
     }
 
     public void play() {
-    	
+
+        Properties prop = new Properties();
+        InputStream input = null;
+
+        try {
+
+            input = new FileInputStream("coinflip_config.conf");
+
+            // load a properties file
+            prop.load(input);
+
+            headFile = prop.getProperty("headFile");
+            tailFile = prop.getProperty("tailFile");
+            winMessage = prop.getProperty("winMessage");
+            loseMessage = prop.getProperty("loseMessage");
+
+        } catch (IOException ex) {
+            System.out
+                    .println("There went something wrong when reading the config file:");
+            System.out.println(ex);
+        } finally {
+            if (input != null) {
+                try {
+                    input.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+
         GLProfile profile = GLProfile.get(GLProfile.GL2);
         GLCapabilities capabilities = new GLCapabilities(profile);
         GLCanvas canvas = new GLCanvas(capabilities);

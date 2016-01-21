@@ -4,7 +4,9 @@ import gr.planetz.PingingService;
 import gr.planetz.impl.HttpPingingService;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.math.BigInteger;
@@ -13,6 +15,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 public class Client {
 
@@ -142,17 +145,73 @@ public class Client {
         return "";
     }
 
-    public void playCoinFlip(boolean isServer, boolean useTLS) {
+    public void playCoinFlip() {
+
+        Properties prop = new Properties();
+        InputStream input = null;
+        boolean isServer = false;
+        boolean useTLS = true;
+        boolean useBroker = true;
+        String serverIP = "";
+        Integer serverPort = 0;
+        String rootCertificateFile = "";
+        String rootCertificatePw = "";
+        String rootCertificateAlias = "";
+        String clientCertificateFile = "";
+        String clientCertificatePw = "";
+        String clientCertificateAlias = "";
+        String serverCertificateFile = "";
+        String serverCertificatePw = "";
+        String serverCertificateAlias = "";
+        String serialNumberStartsAtIn = "5";
+
+        try {
+
+            input = new FileInputStream("coinflip_config.conf");
+
+            // load a properties file
+            prop.load(input);
+
+            isServer = Boolean.parseBoolean(prop.getProperty("isServer"));
+            useTLS = Boolean.parseBoolean(prop.getProperty("useTLS"));
+            useBroker = Boolean.parseBoolean(prop.getProperty("useBroker"));
+            serverIP = prop.getProperty("serverIP");
+            serverPort = Integer.parseInt(prop.getProperty("serverPort"));
+            rootCertificateFile = prop.getProperty("rootCertificateFile");
+            rootCertificatePw = prop.getProperty("rootCertificatePw");
+            rootCertificateAlias = prop.getProperty("rootCertificateAlias");
+            clientCertificateFile = prop.getProperty("clientCertificateFile");
+            clientCertificatePw = prop.getProperty("clientCertificatePw");
+            clientCertificateAlias = prop.getProperty("clientCertificateAlias");
+            serverCertificateFile = prop.getProperty("serverCertificateFile");
+            serverCertificatePw = prop.getProperty("serverCertificatePw");
+            serverCertificateAlias = prop.getProperty("serverCertificateAlias");
+            serialNumberStartsAtIn = prop.getProperty("serialNumberStartsAt");
+
+        } catch (IOException ex) {
+            System.out.println("There went something wrong when reading the config file:");
+            System.out.println(ex);
+        } finally {
+            if (input != null) {
+                try {
+                    input.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+
         ProtocolImpl protocolImpl = new ProtocolImpl();
 
         if (useTLS) {
-            BigInteger serialNumberStartsAt = new BigInteger("5");
+            BigInteger serialNumberStartsAt = new BigInteger(
+                    serialNumberStartsAtIn);
             // X509CertGenerator gen = new
             // X509CertGenerator(serialNumberStartsAt);
             try {
                 X509CertGenerator gen = new X509CertGenerator(
                         serialNumberStartsAt);
-                gen.loadRoot("root", "fhwedel", "root");
+                gen.loadRoot(rootCertificateFile, rootCertificatePw,
+                        rootCertificateAlias);
 
             } catch (Exception e1) {
                 // TODO Auto-generated catch block
@@ -169,40 +228,35 @@ public class Client {
         PrintWriter out = null;
         BufferedReader in = null;
 
-        //
-        // Über den Parameter wird entschieden, wer das Protocoll anfängt und
-        // damit den Server spielt!
-        //
-
         try {
             if (isServer) {
                 if (useTLS) {
                     networkS = new TLSNetwork(TLSNetwork.SERVER);
-                    networkS.start(4444, "root", "fhwedel", "server",
-                            "fhwedel", OwnTrustManager.NEVER, null, true);
+                    networkS.start(serverPort, serverCertificateFile,
+                            serverCertificatePw, serverCertificateAlias,
+                            serverCertificatePw, OwnTrustManager.NEVER, null,
+                            true);
                 } else {
                     socket = createServerSocket();
                 }
 
             } else {
                 if (useTLS) {
-
-                    String someServer = getSomeServer();
-
-                    String host = someServer.split(":")[0];
-                    Integer port = Integer.parseInt(someServer.split(":")[1]);
-
-                    System.out.println("host = " + host);
-                    System.out.println("port = " + port);
+                    if (useBroker) {
+                        String someServer = getSomeServer();
+                        serverIP = someServer.split(":")[0];
+                        serverPort = Integer.parseInt(someServer.split(":")[1]);
+                    }
 
                     networkC = new TLSNetwork(TLSNetwork.CLIENT);
-                    networkC.start(4444, "root", "fhwedel", "client",
-                            "fhwedel", OwnTrustManager.NEVER, null, true);
-                    // networkC.connect("fluffels.de",50000,
-                    // networkC.connect("54.77.97.90", 4444,
-                    // networkC.connect("127.0.0.1", 4444,
-                    networkC.connect(host, port, "root", "fhwedel", "client",
-                            "fhwedel", OwnTrustManager.NEVER, null, true);
+                    networkC.start(serverPort, clientCertificateFile,
+                            clientCertificatePw, clientCertificateAlias,
+                            clientCertificatePw, OwnTrustManager.NEVER, null,
+                            true);
+                    networkC.connect(serverIP, serverPort,
+                            clientCertificateFile, clientCertificatePw,
+                            clientCertificateAlias, clientCertificatePw,
+                            OwnTrustManager.NEVER, null, true);
                 } else {
                     socket = createClientSocket();
                 }
@@ -216,11 +270,9 @@ public class Client {
 
             if (!isServer) {
                 String initial = protocolImpl.calcAndRespondToProtocolStep();
-                // System.out.println("outgoing: '" + initial + "'");
                 if (!useTLS) {
                     out.println(initial);
                 } else {
-                    System.out.println("initial: " + initial);
                     networkC.send(initial);
                 }
 
@@ -249,14 +301,7 @@ public class Client {
     }
 
     public void main(String[] args) {
-
-        boolean isServer = false;
-        if (args.length != 0 && args[0].matches("^START$")) {
-            isServer = true;
-        }
-
-        playCoinFlip(isServer, true);
-
+        playCoinFlip();
     }
 
 }

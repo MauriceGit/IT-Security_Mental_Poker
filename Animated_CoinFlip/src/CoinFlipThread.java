@@ -15,7 +15,7 @@ public class CoinFlipThread implements Runnable {
 
     @Override
     public void run() {
-       this.coinFlip.playCoinFlip(isServer, useTLS);        
+       this.coinFlip.playCoinFlip();        
     }
 
     public boolean isFinished() {
