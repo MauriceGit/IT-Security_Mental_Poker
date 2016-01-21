@@ -268,7 +268,7 @@ public class ProtocolImpl {
                     .parseHexBinary(protocol.getPayload().getDeChosenCoin()));
             String result = Hex.toHexString(recover);
 
-            System.out.println("Coin flip was:" + convertHexToString(result));
+            //System.out.println("Coin flip was:" + convertHexToString(result));
             String winningState = "lost";
             iWon = false;
 
@@ -277,11 +277,11 @@ public class ProtocolImpl {
                 winningState = "won";
                 iWon = true;
             }
-            System.out.println("And Koko chose: "
-                    + protocol.getPayload().getDesiredCoin());
+            //System.out.println("And Koko chose: "
+            //        + protocol.getPayload().getDesiredCoin());
 
-            System.out.println("That means, that I " + winningState
-                    + "!!!!!!!!!!!!11elf");
+            //System.out.println("That means, that I " + winningState
+            //        + "!!!!!!!!!!!!11elf");
 
         } catch (Exception e) {
             System.out.println("Oh no, people are so mean");
@@ -625,10 +625,10 @@ public class ProtocolImpl {
 
             String result = Hex.toHexString(recover);
 
-            System.out.println("Coin flip was:" + convertHexToString(result));
-
-            System.out.println("And you chose: "
-                    + protocol.getPayload().getDesiredCoin());
+//            System.out.println("Coin flip was:" + convertHexToString(result));
+//
+//            System.out.println("And you chose: "
+//                    + protocol.getPayload().getDesiredCoin());
 
             iWon = convertHexToString(result).equals(
                     protocol.getPayload().getDesiredCoin());
@@ -776,7 +776,7 @@ public class ProtocolImpl {
         protocol = newProtocol;
 
         if (protocolFinished(newProtocol)) {
-            System.out.println("finished");
+            // System.out.println("finished");
             return Status.PROTOTOCOL_FINISHED;
         }
 

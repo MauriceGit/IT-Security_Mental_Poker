@@ -45,6 +45,7 @@ There are two main parts. The first section contains variables regarding the coi
 
 The second section contains variables regarding the animation:
 
+- showAnimation: A Boolean value to determine, if the OpenGL animation should be displayed.
 - headFile:    The filename for the texture for the coin (Head side).
 - tailFile:    The filename for the texture for the coin (Tail side).
 - winMessage:  The message displayed for the winner.

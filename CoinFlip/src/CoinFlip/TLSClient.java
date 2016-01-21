@@ -74,7 +74,6 @@ public class TLSClient {
 		} catch (IOException e) {
 			System.out.println("sdflkjdsfgdsgjhdsaghjsgdasgdakgdsajjhjk");
 		}
-		System.out.println(isConnected());
 		
 	}
 

@@ -3,14 +3,10 @@ import CoinFlip.Client;
 
 public class CoinFlipThread implements Runnable {
     
-    private boolean isServer;
-    private boolean useTLS;
     private Client coinFlip;
     
-    public CoinFlipThread(boolean isServer, boolean useTLS) {
+    public CoinFlipThread() {
         this.coinFlip = new Client();
-        this.isServer = isServer;
-        this.useTLS = useTLS;
     }
 
     @Override

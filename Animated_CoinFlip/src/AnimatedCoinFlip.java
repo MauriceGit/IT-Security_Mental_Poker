@@ -1,20 +1,45 @@
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 public class AnimatedCoinFlip {
 
     public static void main(String[] args) {
 
-        boolean isServer = false;
-        boolean useTLS = true;
+        Properties prop = new Properties();
+        InputStream input = null;
+        Boolean showAnimation = true;
 
-        if (args.length != 0 && args[0].matches("^START$")) {
-            isServer = true;
+        try {
+
+            input = new FileInputStream("coinflip_config.conf");
+
+            // load a properties file
+            prop.load(input);
+
+            showAnimation = Boolean.parseBoolean(prop
+                    .getProperty("showAnimation"));
+
+        } catch (IOException ex) {
+            System.out
+                    .println("There went something wrong when reading the config file:");
+            System.out.println(ex);
+        } finally {
+            if (input != null) {
+                try {
+                    input.close();
+                } catch (IOException e) {
+                }
+            }
         }
 
-        CoinFlipThread coinFlip = new CoinFlipThread(isServer, useTLS);
+        CoinFlipThread coinFlip = new CoinFlipThread();
         Thread coinFlipThread = new Thread(coinFlip);
         coinFlipThread.start();
 
-        if (!isServer) {
-            
+        if (showAnimation) {
+
             AnimationThread animation = new AnimationThread();
             Thread animationThread = new Thread(animation);
             animationThread.start();
@@ -25,12 +50,18 @@ public class AnimatedCoinFlip {
                 System.out.println("The main Thread got interrupted... maybe?");
             }
 
-            System.out.println("finished ? " + coinFlip.isFinished());
-            System.out.println("won      ? " + coinFlip.isWon());
-
             animation.setWinningState(coinFlip.isWon());
             animation.setFinishedState(coinFlip.isFinished());
+        } else {
+            try {
+                coinFlipThread.join();
+            } catch (InterruptedException e) {
+                System.out.println("The main Thread got interrupted... maybe?");
+            }
         }
+
+        System.out.println("finished ? " + coinFlip.isFinished());
+        System.out.println("won      ? " + coinFlip.isWon());
     }
 
 }
